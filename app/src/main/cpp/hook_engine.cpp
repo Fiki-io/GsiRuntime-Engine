@@ -238,6 +238,15 @@ std::string redirectSandboxPath(const char* path) {
     if (p == "/dev/rfkill") {
         return sandbox + "/tmp/dev_rfkill.raw";
     }
+    if (p == "/dev/tee0") {
+        return sandbox + "/tmp/dev_tee0.raw";
+    }
+    if (p == "/dev/ion") {
+        return sandbox + "/tmp/dev_ion.raw";
+    }
+    if (p == "/dev/qseecom") {
+        return sandbox + "/tmp/dev_qseecom.raw";
+    }
 
     return p;
 }
@@ -1031,6 +1040,30 @@ int hw_get_module(const char* id, const void** module) {
         {}
     };
 
+    static VirtualHwModule drmModule = {
+        0x48574D54,
+        1,
+        0,
+        "drm",
+        "Virtual GSI DRM / ClearKey / Widevine HAL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
+    static VirtualHwModule cryptoModule = {
+        0x48574D54,
+        1,
+        0,
+        "crypto",
+        "Virtual GSI MediaCrypto HAL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
     if (strcmp(id, "gralloc") == 0) {
         *module = &grallocModule;
         return 0;
@@ -1061,6 +1094,14 @@ int hw_get_module(const char* id, const void** module) {
     }
     if (strcmp(id, "bluetooth") == 0) {
         *module = &bluetoothModule;
+        return 0;
+    }
+    if (strcmp(id, "drm") == 0) {
+        *module = &drmModule;
+        return 0;
+    }
+    if (strcmp(id, "crypto") == 0) {
+        *module = &cryptoModule;
         return 0;
     }
 

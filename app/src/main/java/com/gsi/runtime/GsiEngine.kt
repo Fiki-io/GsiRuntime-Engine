@@ -164,6 +164,12 @@ object GsiEngine {
     external fun nativeExtractEssentialSystem(sandboxDir: String): String
     external fun nativeRunGsiTestSuite(sandboxDir: String): String
 
+    // Virtual DRM & MediaCrypto Subsystem (Pilar 11)
+    external fun nativeInitDrm(sandboxDir: String): Boolean
+    external fun nativeToggleDrm(enabled: Boolean)
+    external fun nativeRunDrmCryptoTest(): String
+    external fun nativeGetDrmStats(): String
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()

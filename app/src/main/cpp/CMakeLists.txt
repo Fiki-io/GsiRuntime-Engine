@@ -43,6 +43,7 @@ add_library(
     bluetooth_bridge.cpp
     gsi_extractor.cpp
     init_runner.cpp
+    drm_bridge.cpp
 )
 
 target_link_libraries(

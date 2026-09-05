@@ -263,6 +263,13 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 binding.tvBluetoothStatus.text = "Virtual Bluetooth HAL: ONLINE (CyberGSI-BLE [00:1A:7D:DA:71:13] | BT 5.2)"
                 logToConsole("Virtual Bluetooth HAL Subsystem online (/dev/vhci active)")
             }
+
+            // Pilar 11: Initialize Virtual DRM & MediaCrypto Subsystem
+            val drmOk = GsiEngine.nativeInitDrm(sandboxDirPath)
+            if (drmOk) {
+                binding.tvDrmStatus.text = "Virtual DRM HAL: ONLINE (ClearKey + Widevine L3 [AES-128])"
+                logToConsole("Virtual DRM & MediaCrypto Subsystem online (/dev/tee0, dev_ion, dev_qseecom active)")
+            }
         }
 
         // 4. Setup SurfaceView for ANativeWindow pipeline
@@ -623,6 +630,24 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         }
         binding.chipBtStats.setOnClickListener {
             val stats = GsiEngine.nativeGetBluetoothStats()
+            appendTerminalOutput("\n$stats\n")
+        }
+        var drmEnabled = true
+        binding.chipDrmToggle.setOnClickListener {
+            drmEnabled = !drmEnabled
+            GsiEngine.nativeToggleDrm(drmEnabled)
+            binding.tvDrmStatus.text = if (drmEnabled)
+                "Virtual DRM HAL: ONLINE (ClearKey + Widevine L3 [AES-128])"
+            else
+                "Virtual DRM HAL: OFFLINE (Disabled)"
+            appendTerminalOutput("\n[DRM HAL] Subsystem toggled: ${if (drmEnabled) "ONLINE (ClearKey & Widevine L3)" else "OFFLINE (Disabled)"}\n")
+        }
+        binding.chipDrmTest.setOnClickListener {
+            val res = GsiEngine.nativeRunDrmCryptoTest()
+            appendTerminalOutput("\n$res\n")
+        }
+        binding.chipDrmStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetDrmStats()
             appendTerminalOutput("\n$stats\n")
         }
         binding.chipExtractGsi.setOnClickListener {

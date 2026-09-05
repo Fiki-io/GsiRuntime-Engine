@@ -136,6 +136,13 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
       6. Process Spawner & Root/SELinux privilege spoofing execution.
       7. Android Init Supervisor & registered service states.
     - One-click interactive execution buttons & quick chips: `[extract_gsi]`, `[run_gsi_tests]`, `[spawn_sh]`.
+20. **Virtual DRM & MediaCrypto Subsystem (Pilar 11)**:
+    - User-space DRM scheme support: W3C ClearKey (`e660e10f-26ac-4428-9b77-98f653650536`) and Widevine Modular L3 (`edef8ba9-79d6-4ace-a3c8-27dcd51d21ed`).
+    - Mock TEE & cryptographic device nodes (`/dev/tee0`, `/dev/ion`, `/dev/qseecom`) redirected to user sandbox backing stores.
+    - Hardware module interception for `hw_get_module("drm")` and `hw_get_module("crypto")` returning valid HAL descriptor `0x48574D54` to prevent `mediadrmserver` and media framework crash loops.
+    - Software AES-128 cryptographic sample decryption pipeline for protected media frames.
+    - System property synchronization (`drm.service.enabled`, `media.mediadrmservice.enable`, `ro.hardware.drm`, `vendor.drm.widevine.security_level = L3`).
+    - Interactive diagnostic chips: `[drm_stats]`, `[drm_test]`, `[drm_toggle]`.
 
 ---
 

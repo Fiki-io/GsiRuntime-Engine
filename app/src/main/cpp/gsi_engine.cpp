@@ -29,6 +29,7 @@
 #include "include/bluetooth_bridge.h"
 #include "include/gsi_extractor.h"
 #include "include/init_runner.h"
+#include "include/drm_bridge.h"
 
 namespace {
     std::mutex gFsMutex;
@@ -1042,6 +1043,36 @@ Java_com_gsi_runtime_GsiEngine_nativeRunGsiTestSuite(JNIEnv* env, jobject /* thi
 
     auto report = gsi::InitRunner::getInstance().runGsiTestSuite(sDir, hasVfs);
     return env->NewStringUTF(report.formattedSummary.c_str());
+}
+
+// -------------------------------------------------------------
+// Pilar 11: Virtual DRM & MediaCrypto Subsystem APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInitDrm(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    return gsi::DrmBridge::getInstance().initialize(sDir) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT void JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeToggleDrm(JNIEnv* /* env */, jobject /* this */, jboolean enabled) {
+    gsi::DrmBridge::getInstance().toggleDrm(enabled == JNI_TRUE);
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeRunDrmCryptoTest(JNIEnv* env, jobject /* this */) {
+    std::string result = gsi::DrmBridge::getInstance().runCryptoSelfTest();
+    return env->NewStringUTF(result.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetDrmStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::DrmBridge::getInstance().getDrmStatsString();
+    return env->NewStringUTF(stats.c_str());
 }
 
 } // extern "C"
