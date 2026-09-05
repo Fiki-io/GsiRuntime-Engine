@@ -170,6 +170,13 @@ object GsiEngine {
     external fun nativeRunDrmCryptoTest(): String
     external fun nativeGetDrmStats(): String
 
+    // Virtual KeyMint / Keystore2 & Biometrics HAL Subsystem (Pilar 12)
+    external fun nativeInitKeystore(sandboxDir: String): Boolean
+    external fun nativeEnrollFingerprint(fingerId: Int, name: String): Boolean
+    external fun nativeAuthenticateFingerprint(shouldMatch: Boolean): String
+    external fun nativeToggleBiometrics(enabled: Boolean)
+    external fun nativeGetKeystoreStats(): String
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()

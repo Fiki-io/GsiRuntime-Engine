@@ -44,6 +44,7 @@ add_library(
     gsi_extractor.cpp
     init_runner.cpp
     drm_bridge.cpp
+    keystore_bridge.cpp
 )
 
 target_link_libraries(

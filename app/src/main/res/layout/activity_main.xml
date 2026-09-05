@@ -208,6 +208,16 @@
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
+                <TextView
+                    android:id="@+id/tvKeystoreStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="2dp"
+                    android:text="Virtual Keystore2 &amp; Biometrics: ONLINE (KeyMint v3 + CyberFP [3 Fingers])"
+                    android:textColor="@color/accent_green"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
 
                 <TextView
                     android:id="@+id/tvHostRam"
@@ -1404,6 +1414,57 @@
                             android:layout_marginEnd="6dp"
                             android:backgroundTint="@color/surface_border"
                             android:text="drm_toggle"
+                            android:textColor="@color/primary_cyan"
+                            android:textSize="11sp"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipKeystoreStats"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/primary_cyan_dark"
+                            android:text="keystore_stats"
+                            android:textColor="@color/bg_dark"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipFpEnroll"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/accent_green"
+                            android:text="fp_enroll"
+                            android:textColor="@color/bg_dark"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipFpAuth"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/primary_cyan"
+                            android:text="fp_auth"
+                            android:textColor="@color/bg_dark"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipFpToggle"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/surface_border"
+                            android:text="fp_toggle"
                             android:textColor="@color/primary_cyan"
                             android:textSize="11sp"
                             app:cornerRadius="18dp" />

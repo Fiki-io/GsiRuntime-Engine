@@ -247,6 +247,9 @@ std::string redirectSandboxPath(const char* path) {
     if (p == "/dev/qseecom") {
         return sandbox + "/tmp/dev_qseecom.raw";
     }
+    if (p == "/dev/fingerprint" || p == "/dev/qfp-nodisplay" || p == "/dev/esfp0") {
+        return sandbox + "/tmp/dev_fingerprint.raw";
+    }
 
     return p;
 }
@@ -1064,6 +1067,42 @@ int hw_get_module(const char* id, const void** module) {
         {}
     };
 
+    static VirtualHwModule fingerprintModule = {
+        0x48574D54,
+        2,
+        3,
+        "fingerprint",
+        "Virtual GSI Biometrics Fingerprint HAL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
+    static VirtualHwModule keymasterModule = {
+        0x48574D54,
+        4,
+        0,
+        "keymaster",
+        "Virtual GSI Keymaster / KeyMint HAL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
+    static VirtualHwModule gatekeeperModule = {
+        0x48574D54,
+        1,
+        0,
+        "gatekeeper",
+        "Virtual GSI Gatekeeper HAL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
     if (strcmp(id, "gralloc") == 0) {
         *module = &grallocModule;
         return 0;
@@ -1102,6 +1141,18 @@ int hw_get_module(const char* id, const void** module) {
     }
     if (strcmp(id, "crypto") == 0) {
         *module = &cryptoModule;
+        return 0;
+    }
+    if (strcmp(id, "fingerprint") == 0) {
+        *module = &fingerprintModule;
+        return 0;
+    }
+    if (strcmp(id, "keymaster") == 0 || strcmp(id, "keystore") == 0) {
+        *module = &keymasterModule;
+        return 0;
+    }
+    if (strcmp(id, "gatekeeper") == 0) {
+        *module = &gatekeeperModule;
         return 0;
     }
 

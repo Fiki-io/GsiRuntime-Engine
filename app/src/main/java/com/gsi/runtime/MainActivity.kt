@@ -270,6 +270,13 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 binding.tvDrmStatus.text = "Virtual DRM HAL: ONLINE (ClearKey + Widevine L3 [AES-128])"
                 logToConsole("Virtual DRM & MediaCrypto Subsystem online (/dev/tee0, dev_ion, dev_qseecom active)")
             }
+
+            // Pilar 12: Initialize Virtual KeyMint / Keystore2 & Biometrics HAL Subsystem
+            val keystoreOk = GsiEngine.nativeInitKeystore(sandboxDirPath)
+            if (keystoreOk) {
+                binding.tvKeystoreStatus.text = "Virtual Keystore2 & Biometrics: ONLINE (KeyMint v3 + CyberFP [3 Fingers])"
+                logToConsole("Virtual Keystore2 & Biometrics HAL online (KeyMint v3 active, /dev/fingerprint ready)")
+            }
         }
 
         // 4. Setup SurfaceView for ANativeWindow pipeline
@@ -649,6 +656,33 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         binding.chipDrmStats.setOnClickListener {
             val stats = GsiEngine.nativeGetDrmStats()
             appendTerminalOutput("\n$stats\n")
+        }
+        binding.chipKeystoreStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetKeystoreStats()
+            appendTerminalOutput("\n$stats\n")
+        }
+        var nextFingerId = 4
+        binding.chipFpEnroll.setOnClickListener {
+            val fName = "CyberFinger #$nextFingerId"
+            val ok = GsiEngine.nativeEnrollFingerprint(nextFingerId, fName)
+            appendTerminalOutput(if (ok) "\n[Biometrics] Enrolled new template: $fName (ID: $nextFingerId)\n" else "\n[Biometrics] Enroll failed\n")
+            if (ok) nextFingerId++
+        }
+        var matchToggle = true
+        binding.chipFpAuth.setOnClickListener {
+            val res = GsiEngine.nativeAuthenticateFingerprint(matchToggle)
+            appendTerminalOutput("\n[Biometrics Touch Sensor] $res\n")
+            matchToggle = !matchToggle // Alternate between match and non-match for testing
+        }
+        var fpEnabled = true
+        binding.chipFpToggle.setOnClickListener {
+            fpEnabled = !fpEnabled
+            GsiEngine.nativeToggleBiometrics(fpEnabled)
+            binding.tvKeystoreStatus.text = if (fpEnabled)
+                "Virtual Keystore2 & Biometrics: ONLINE (KeyMint v3 + CyberFP [Active])"
+            else
+                "Virtual Keystore2 & Biometrics: OFFLINE (Biometrics Sensor Disabled)"
+            appendTerminalOutput("\n[Biometrics] Sensor toggled: ${if (fpEnabled) "ONLINE (Active)" else "OFFLINE (Disabled)"}\n")
         }
         binding.chipExtractGsi.setOnClickListener {
             binding.btnExtractEssential.performClick()

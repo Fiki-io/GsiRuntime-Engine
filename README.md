@@ -143,6 +143,13 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Software AES-128 cryptographic sample decryption pipeline for protected media frames.
     - System property synchronization (`drm.service.enabled`, `media.mediadrmservice.enable`, `ro.hardware.drm`, `vendor.drm.widevine.security_level = L3`).
     - Interactive diagnostic chips: `[drm_stats]`, `[drm_test]`, `[drm_toggle]`.
+21. **Virtual KeyMint / Keystore2 & Biometrics HAL Subsystem (Pilar 12)**:
+    - In-memory KeyMint v3 and Keystore2 cryptographic key generator supporting symmetric (AES-256) and asymmetric (RSA-2048, HMAC-SHA256) credential keys.
+    - User-space Biometrics (Fingerprint) HAL engine managing multi-finger template enrollment, recognition, and sensor state transitions.
+    - Kernel biometric node virtualization (`/dev/fingerprint`, `/dev/qfp-nodisplay`, `/dev/esfp0`) backed by `$SANDBOX/tmp/dev_fingerprint.raw`.
+    - Hardware module interception for `hw_get_module("fingerprint")`, `hw_get_module("keymaster")`, and `hw_get_module("gatekeeper")` returning valid HAL descriptor `0x48574D54` to satisfy Android 12-15 `keystore2`, `gatekeeperd`, and `BiometricService`.
+    - System properties synchronization (`ro.hardware.fingerprint`, `ro.hardware.keystore`, `ro.hardware.gatekeeper`, `persist.sys.fingerprint.enrolled = true`).
+    - Interactive hardware control chips: `[keystore_stats]`, `[fp_enroll]`, `[fp_auth]`, `[fp_toggle]`.
 
 ---
 

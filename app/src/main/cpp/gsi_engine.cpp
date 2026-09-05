@@ -30,6 +30,7 @@
 #include "include/gsi_extractor.h"
 #include "include/init_runner.h"
 #include "include/drm_bridge.h"
+#include "include/keystore_bridge.h"
 
 namespace {
     std::mutex gFsMutex;
@@ -1072,6 +1073,45 @@ Java_com_gsi_runtime_GsiEngine_nativeRunDrmCryptoTest(JNIEnv* env, jobject /* th
 JNIEXPORT jstring JNICALL
 Java_com_gsi_runtime_GsiEngine_nativeGetDrmStats(JNIEnv* env, jobject /* this */) {
     std::string stats = gsi::DrmBridge::getInstance().getDrmStatsString();
+    return env->NewStringUTF(stats.c_str());
+}
+
+// -------------------------------------------------------------
+// Pilar 12: Virtual KeyMint / Keystore2 & Biometrics HAL APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInitKeystore(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    return gsi::KeystoreBridge::getInstance().initialize(sDir) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeEnrollFingerprint(JNIEnv* env, jobject /* this */, jint fingerId, jstring jName) {
+    const char* nameChars = env->GetStringUTFChars(jName, nullptr);
+    std::string sName = nameChars ? nameChars : "";
+    if (nameChars) env->ReleaseStringUTFChars(jName, nameChars);
+
+    return gsi::KeystoreBridge::getInstance().enrollFingerprint(fingerId, sName) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeAuthenticateFingerprint(JNIEnv* env, jobject /* this */, jboolean shouldMatch) {
+    auto res = gsi::KeystoreBridge::getInstance().authenticateFingerprint(shouldMatch == JNI_TRUE);
+    return env->NewStringUTF(res.message.c_str());
+}
+
+JNIEXPORT void JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeToggleBiometrics(JNIEnv* /* env */, jobject /* this */, jboolean enabled) {
+    gsi::KeystoreBridge::getInstance().toggleBiometrics(enabled == JNI_TRUE);
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetKeystoreStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::KeystoreBridge::getInstance().getKeystoreStatsString();
     return env->NewStringUTF(stats.c_str());
 }
 
