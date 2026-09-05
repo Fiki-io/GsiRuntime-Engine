@@ -217,6 +217,23 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 }
                 logToConsole("Virtual Battery & Power Management Subsystem online (sysfs power_supply active)")
             }
+
+            // Pilar 6: Initialize Virtual Sensor Subsystem & Sensors HAL Bridge
+            val sensorOk = GsiEngine.nativeInitSensors(sandboxDirPath)
+            if (sensorOk) {
+                GsiSensorManager.start(this)
+                GsiSensorManager.onStateChangedListener = { state ->
+                    runOnUiThread {
+                        val syncStr = if (state.isAutoSync) " (Host-Motion)" else " (Spoofed)"
+                        binding.tvSensorStatus.text = String.format(
+                            Locale.US,
+                            "Virtual Sensors HAL: ONLINE (%s | A:%.1f,%.1f,%.1f | %s)",
+                            state.displayOrientation, state.accelX, state.accelY, state.accelZ, syncStr
+                        )
+                    }
+                }
+                logToConsole("Virtual Sensor Subsystem & Sensors HAL Bridge active (IIO sysfs online)")
+            }
         }
 
         // 4. Setup SurfaceView for ANativeWindow pipeline
@@ -458,6 +475,32 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         }
         binding.chipBatStats.setOnClickListener {
             val stats = GsiEngine.nativeGetBatteryStats()
+            appendTerminalOutput("\n$stats\n")
+        }
+        binding.chipSensorSync.setOnClickListener {
+            GsiSensorManager.setAutoSync(true, this)
+            appendTerminalOutput("\n[Sensor Sync] Real-time host motion synced with GSI runtime\n")
+        }
+        binding.chipOrientPortrait.setOnClickListener {
+            GsiSensorManager.simulateOrientation(0)
+            appendTerminalOutput("\n[Sensor Spoof] Orientation set to Portrait (Accel: 0, 9.8, 0)\n")
+        }
+        binding.chipOrientLandscape.setOnClickListener {
+            GsiSensorManager.simulateOrientation(1)
+            appendTerminalOutput("\n[Sensor Spoof] Orientation set to Landscape Left (Accel: 9.8, 0, 0)\n")
+        }
+        binding.chipShakeDevice.setOnClickListener {
+            GsiSensorManager.simulateShake()
+            appendTerminalOutput("\n[Sensor Spoof] Injected shake motion impulse (24.5 m/s² shockwave)!\n")
+        }
+        binding.chipProxNear.setOnClickListener {
+            val currProx = GsiSensorManager.currentState.proximityCm
+            val isNear = currProx < 3.0f
+            GsiSensorManager.simulateProximity(!isNear)
+            appendTerminalOutput("\n[Sensor Spoof] Proximity toggled to: ${if (!isNear) "NEAR (0.0 cm)" else "FAR (5.0 cm)"}\n")
+        }
+        binding.chipSensorStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetSensorStats()
             appendTerminalOutput("\n$stats\n")
         }
         binding.chipTestBinder.setOnClickListener {
@@ -873,6 +916,7 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         GsiEngine.nativeStopBootSequence()
         GsiAudioPlayer.stop()
         GsiBatteryManager.stop(this)
+        GsiSensorManager.stop(this)
         GsiEngine.nativeShutdownAudio()
         GsiEngine.nativeShutdownLogcatBroker()
         GsiEngine.nativeShutdownNetwork()

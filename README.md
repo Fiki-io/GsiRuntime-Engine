@@ -92,6 +92,12 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Real-time automatic synchronization with host Android battery via `GsiBatteryManager` (`ACTION_BATTERY_CHANGED`).
     - In-process syscall redirection of `/sys/class/power_supply/*` in `libgsi_hook.so`.
     - Interactive spoofing chips (`[bat_sync]`, `[bat_100]`, `[bat_50]`, `[bat_15]`, `[bat_plug]`, `[battery_stats]`).
+14. **Virtual Sensor Subsystem & Sensors HAL Bridge (Pilar 6)**:
+    - Synthetic Linux Industrial I/O (IIO) sysfs hierarchy (`$SANDBOX/sys/bus/iio/devices/iio:device0/`).
+    - 4-in-1 sensor telemetry: Accelerometer (m/s²), Gyroscope (rad/s), Ambient Light (lux), and Proximity (cm).
+    - Android Sensors HAL module interception via `hw_get_module("sensors")` in `libgsi_hook.so` (`HARDWARE_MODULE_TAG = 0x48574D54`).
+    - Real-time host device motion mirroring via `GsiSensorManager` and continuous streaming FIFO pipe (`$SANDBOX/tmp/sensor_event`).
+    - Motion spoofing chips (`[sensor_sync]`, `[orient_portrait]`, `[orient_landscape]`, `[shake_device]`, `[prox_near]`, `[sensor_stats]`).
 
 ---
 

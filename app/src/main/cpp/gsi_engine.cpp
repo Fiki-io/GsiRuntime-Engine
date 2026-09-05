@@ -22,6 +22,7 @@
 #include "include/logcat_broker.h"
 #include "include/audio_bridge.h"
 #include "include/battery_bridge.h"
+#include "include/sensor_bridge.h"
 
 namespace {
     std::mutex gFsMutex;
@@ -847,6 +848,36 @@ Java_com_gsi_runtime_GsiEngine_nativeGetBatteryStats(JNIEnv* env, jobject /* thi
     return env->NewStringUTF(stats.c_str());
 }
 
+// -------------------------------------------------------------
+// Pilar 6: Virtual Sensor Subsystem & Sensors HAL APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInitSensors(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    return gsi::SensorBridge::getInstance().initialize(sDir) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeUpdateSensors(JNIEnv* /* env */, jobject /* this */,
+                                                  jfloat accelX, jfloat accelY, jfloat accelZ,
+                                                  jfloat gyroX, jfloat gyroY, jfloat gyroZ,
+                                                  jfloat lightLux, jfloat proximityCm) {
+    return gsi::SensorBridge::getInstance().updateSensors(
+        accelX, accelY, accelZ, gyroX, gyroY, gyroZ, lightLux, proximityCm
+    ) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetSensorStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::SensorBridge::getInstance().getSensorStatsString();
+    return env->NewStringUTF(stats.c_str());
+}
+
 } // extern "C"
+
 
 

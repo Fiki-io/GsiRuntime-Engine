@@ -164,6 +164,9 @@ std::string redirectSandboxPath(const char* path) {
     if (p.rfind("/sys/devices/virtual/power_supply/", 0) == 0) {
         return sandbox + "/sys/class/power_supply/" + p.substr(34);
     }
+    if (p.rfind("/sys/bus/iio/devices/", 0) == 0) {
+        return sandbox + "/sys/bus/iio/devices/" + p.substr(21);
+    }
 
     return p;
 }
@@ -809,6 +812,18 @@ int hw_get_module(const char* id, const void** module) {
         {}
     };
 
+    static VirtualHwModule sensorsModule = {
+        0x48574D54,
+        1,
+        0,
+        "sensors",
+        "Virtual GSI Sensors HAL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
     if (strcmp(id, "gralloc") == 0) {
         *module = &grallocModule;
         return 0;
@@ -819,6 +834,10 @@ int hw_get_module(const char* id, const void** module) {
     }
     if (strcmp(id, "audio") == 0) {
         *module = &audioModule;
+        return 0;
+    }
+    if (strcmp(id, "sensors") == 0) {
+        *module = &sensorsModule;
         return 0;
     }
 

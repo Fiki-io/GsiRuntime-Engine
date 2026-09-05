@@ -121,6 +121,20 @@ object GsiEngine {
     ): Boolean
     external fun nativeGetBatteryStats(): String
 
+    // Virtual Sensor Subsystem & Sensors HAL Bridge (Pilar 6)
+    external fun nativeInitSensors(sandboxDir: String): Boolean
+    external fun nativeUpdateSensors(
+        accelX: Float,
+        accelY: Float,
+        accelZ: Float,
+        gyroX: Float = 0.0f,
+        gyroY: Float = 0.0f,
+        gyroZ: Float = 0.0f,
+        lightLux: Float = 300.0f,
+        proximityCm: Float = 5.0f
+    ): Boolean
+    external fun nativeGetSensorStats(): String
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()
