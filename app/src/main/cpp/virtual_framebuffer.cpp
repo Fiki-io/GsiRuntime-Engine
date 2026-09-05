@@ -111,6 +111,18 @@ const uint32_t* VirtualFramebuffer::getPixelBuffer() const {
     return reinterpret_cast<const uint32_t*>(reinterpret_cast<const uint8_t*>(mMmapPtr) + sizeof(VfbHeader));
 }
 
+uint32_t* VirtualFramebuffer::getMutablePixelBuffer() {
+    if (!mMmapPtr) return nullptr;
+    return reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(mMmapPtr) + sizeof(VfbHeader));
+}
+
+void VirtualFramebuffer::notifyFrameUpdated() {
+    std::lock_guard<std::mutex> lock(mBufferMutex);
+    if (!mMmapPtr) return;
+    VfbHeader* hdr = reinterpret_cast<VfbHeader*>(mMmapPtr);
+    hdr->frameSequence++;
+}
+
 void VirtualFramebuffer::copyToTargetBuffer(uint32_t* dst, int dstWidth, int dstHeight, int dstStride) const {
     std::lock_guard<std::mutex> lock(mBufferMutex);
     if (!mMmapPtr || !dst) return;

@@ -250,6 +250,18 @@ std::string redirectSandboxPath(const char* path) {
     if (p == "/dev/fingerprint" || p == "/dev/qfp-nodisplay" || p == "/dev/esfp0") {
         return sandbox + "/tmp/dev_fingerprint.raw";
     }
+    if (p == "/dev/kgsl-3d0") {
+        return sandbox + "/tmp/dev_kgsl_3d0.raw";
+    }
+    if (p == "/dev/mali0") {
+        return sandbox + "/tmp/dev_mali0.raw";
+    }
+    if (p == "/dev/dri/card0") {
+        return sandbox + "/tmp/dev_dri_card0.raw";
+    }
+    if (p == "/dev/dri/renderD128") {
+        return sandbox + "/tmp/dev_dri_renderD128.raw";
+    }
 
     return p;
 }
@@ -1155,12 +1167,38 @@ int hw_get_module(const char* id, const void** module) {
         *module = &gatekeeperModule;
         return 0;
     }
+    if (strcmp(id, "egl") == 0 || strcmp(id, "gpu") == 0) {
+        *module = &grallocModule;
+        return 0;
+    }
 
     static auto realHwGet = reinterpret_cast<int (*)(const char*, const void**)>(dlsym(RTLD_NEXT, "hw_get_module"));
     if (realHwGet) {
         return realHwGet(id, module);
     }
     return -1;
+}
+
+void* eglGetDisplay(void* /* display_id */) {
+    LOGI("Hook: Intercepted eglGetDisplay() -> Returning Virtual EGL Display Handle");
+    return reinterpret_cast<void*>(0x1000);
+}
+
+int eglInitialize(void* /* dpy */, int* major, int* minor) {
+    LOGI("Hook: Intercepted eglInitialize() -> Initializing Virtual EGL 1.4");
+    if (major) *major = 1;
+    if (minor) *minor = 4;
+    return 1; // EGL_TRUE
+}
+
+const char* eglQueryString(void* /* dpy */, int name) {
+    switch (name) {
+        case 0x3053: return "Google DeepMind GSI Engine"; // EGL_VENDOR
+        case 0x3054: return "1.4 CyberGSI-EGL";            // EGL_VERSION
+        case 0x3055: return "EGL_KHR_image_base EGL_KHR_gl_texture_2D_image EGL_ANDROID_image_native_buffer"; // EGL_EXTENSIONS
+        case 0x308D: return "OpenGL_ES";                 // EGL_CLIENT_APIS
+        default: return "";
+    }
 }
 
 } // extern "C"

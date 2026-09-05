@@ -31,6 +31,7 @@
 #include "include/init_runner.h"
 #include "include/drm_bridge.h"
 #include "include/keystore_bridge.h"
+#include "include/gpu_bridge.h"
 
 namespace {
     std::mutex gFsMutex;
@@ -1112,6 +1113,36 @@ Java_com_gsi_runtime_GsiEngine_nativeToggleBiometrics(JNIEnv* /* env */, jobject
 JNIEXPORT jstring JNICALL
 Java_com_gsi_runtime_GsiEngine_nativeGetKeystoreStats(JNIEnv* env, jobject /* this */) {
     std::string stats = gsi::KeystoreBridge::getInstance().getKeystoreStatsString();
+    return env->NewStringUTF(stats.c_str());
+}
+
+// -------------------------------------------------------------
+// Pilar 13: Virtual GPU & EGL / OpenGL ES Passthrough APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInitGpu(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    return gsi::GpuBridge::getInstance().initialize(sDir) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeRunGpuTest(JNIEnv* env, jobject /* this */) {
+    std::string result = gsi::GpuBridge::getInstance().runGpuSelfTest();
+    return env->NewStringUTF(result.c_str());
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeClearVfbColor(JNIEnv* /* env */, jobject /* this */, jint colorRgba) {
+    return gsi::GpuBridge::getInstance().clearVfbColor(static_cast<uint32_t>(colorRgba)) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetGpuStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::GpuBridge::getInstance().getGpuStatsString();
     return env->NewStringUTF(stats.c_str());
 }
 

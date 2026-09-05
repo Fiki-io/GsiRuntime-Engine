@@ -32,6 +32,8 @@ public:
     uint32_t getFrameSequence() const;
 
     const uint32_t* getPixelBuffer() const;
+    uint32_t* getMutablePixelBuffer();
+    void notifyFrameUpdated();
     void copyToTargetBuffer(uint32_t* dst, int dstWidth, int dstHeight, int dstStride) const;
 
     // Interactive Guest drawing operations

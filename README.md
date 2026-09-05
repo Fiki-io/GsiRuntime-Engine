@@ -150,6 +150,13 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Hardware module interception for `hw_get_module("fingerprint")`, `hw_get_module("keymaster")`, and `hw_get_module("gatekeeper")` returning valid HAL descriptor `0x48574D54` to satisfy Android 12-15 `keystore2`, `gatekeeperd`, and `BiometricService`.
     - System properties synchronization (`ro.hardware.fingerprint`, `ro.hardware.keystore`, `ro.hardware.gatekeeper`, `persist.sys.fingerprint.enrolled = true`).
     - Interactive hardware control chips: `[keystore_stats]`, `[fp_enroll]`, `[fp_auth]`, `[fp_toggle]`.
+22. **Virtual GPU & EGL / OpenGL ES Passthrough Bridge (Pilar 13)**:
+    - User-space EGL 1.4 & OpenGL ES 3.2 passthrough engine bridging guest `SurfaceFlinger` and Skia UI rendering to the host display compositor.
+    - Software rasterizer and barycentric GLES primitive pipeline rendering into Virtual Framebuffer (`$SANDBOX/tmp/vfb0`) blitted at 60 FPS to `ANativeWindow`.
+    - Kernel GPU character device virtualization (`/dev/kgsl-3d0`, `/dev/mali0`, `/dev/dri/card0`, `/dev/dri/renderD128`).
+    - Standard EGL function interception (`eglGetDisplay`, `eglInitialize`, `eglQueryString`) and HAL module interception for `egl`/`gpu` to eliminate `NO_INIT` crashes in guest UI services.
+    - System properties synchronization (`ro.hardware.egl`, `ro.opengles.version = 196610`, `debug.sf.showfps = 1`, `vendor.gpu.status = ONLINE`).
+    - Interactive hardware control chips: `[gpu_stats]`, `[gpu_test]`, `[gl_clear]`.
 
 ---
 

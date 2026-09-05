@@ -45,6 +45,7 @@ add_library(
     init_runner.cpp
     drm_bridge.cpp
     keystore_bridge.cpp
+    gpu_bridge.cpp
 )
 
 target_link_libraries(

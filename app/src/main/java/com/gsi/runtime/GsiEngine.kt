@@ -177,6 +177,12 @@ object GsiEngine {
     external fun nativeToggleBiometrics(enabled: Boolean)
     external fun nativeGetKeystoreStats(): String
 
+    // Virtual GPU & EGL / OpenGL ES Passthrough Bridge (Pilar 13)
+    external fun nativeInitGpu(sandboxDir: String): Boolean
+    external fun nativeRunGpuTest(): String
+    external fun nativeClearVfbColor(colorRgba: Int): Boolean
+    external fun nativeGetGpuStats(): String
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()

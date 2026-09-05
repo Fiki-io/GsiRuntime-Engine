@@ -61,6 +61,9 @@ __attribute__((visibility("default"))) int __system_property_set(const char* key
 // 7. Android Graphics & Hardware HAL Interception
 __attribute__((visibility("default"))) int ashmem_create_region(const char* name, size_t size);
 __attribute__((visibility("default"))) int hw_get_module(const char* id, const void** module);
+__attribute__((visibility("default"))) void* eglGetDisplay(void* display_id);
+__attribute__((visibility("default"))) int eglInitialize(void* dpy, int* major, int* minor);
+__attribute__((visibility("default"))) const char* eglQueryString(void* dpy, int name);
 
 // 8. Engine Diagnostic Self-Test
 const char* gsi_run_privilege_diagnostic(void);

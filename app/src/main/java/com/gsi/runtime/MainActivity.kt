@@ -277,6 +277,13 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 binding.tvKeystoreStatus.text = "Virtual Keystore2 & Biometrics: ONLINE (KeyMint v3 + CyberFP [3 Fingers])"
                 logToConsole("Virtual Keystore2 & Biometrics HAL online (KeyMint v3 active, /dev/fingerprint ready)")
             }
+
+            // Pilar 13: Initialize Virtual GPU & EGL Passthrough Subsystem
+            val gpuOk = GsiEngine.nativeInitGpu(sandboxDirPath)
+            if (gpuOk) {
+                binding.tvGpuStatus.text = "Virtual GPU & EGL: ONLINE (OpenGL ES 3.2 Passthrough | Host GPU Blit)"
+                logToConsole("Virtual GPU & EGL Passthrough Bridge online (OpenGL ES 3.2 ready)")
+            }
         }
 
         // 4. Setup SurfaceView for ANativeWindow pipeline
@@ -683,6 +690,29 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
             else
                 "Virtual Keystore2 & Biometrics: OFFLINE (Biometrics Sensor Disabled)"
             appendTerminalOutput("\n[Biometrics] Sensor toggled: ${if (fpEnabled) "ONLINE (Active)" else "OFFLINE (Disabled)"}\n")
+        }
+        binding.chipGpuStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetGpuStats()
+            appendTerminalOutput("\n$stats\n")
+        }
+        binding.chipGpuTest.setOnClickListener {
+            if (!isRendering) startDisplayTest()
+            isVfbMode = true
+            GsiEngine.nativeStartBootAnimation(false)
+            GsiEngine.nativeSetVfbMode(true)
+            updateDisplayModeUi("VFB")
+            val res = GsiEngine.nativeRunGpuTest()
+            appendTerminalOutput("\n$res\n")
+            logToConsole("GPU Bridge: Rendered OpenGL ES Test Primitive to VFB")
+        }
+        binding.chipGlClear.setOnClickListener {
+            if (!isRendering) startDisplayTest()
+            isVfbMode = true
+            GsiEngine.nativeStartBootAnimation(false)
+            GsiEngine.nativeSetVfbMode(true)
+            updateDisplayModeUi("VFB")
+            GsiEngine.nativeClearVfbColor(0xFF00E5FF.toInt()) // Neon Cyan flash
+            appendTerminalOutput("\n[GL Clear] Framebuffer cleared with Neon Cyan (0xFF00E5FF)\n")
         }
         binding.chipExtractGsi.setOnClickListener {
             binding.btnExtractEssential.performClick()
