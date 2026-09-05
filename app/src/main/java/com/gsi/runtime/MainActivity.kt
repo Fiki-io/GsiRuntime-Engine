@@ -254,6 +254,26 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
             logToConsole("Virtual Framebuffer screen cleared.")
         }
 
+        // Pilar 4: Virtual Hardware Navigation Bar
+        binding.btnNavBack.setOnClickListener {
+            injectHardwareKey(GsiEngine.KEY_BACK, "KEY_BACK (158)")
+        }
+        binding.btnNavHome.setOnClickListener {
+            injectHardwareKey(GsiEngine.KEY_HOME, "KEY_HOME (172)")
+        }
+        binding.btnNavRecents.setOnClickListener {
+            injectHardwareKey(GsiEngine.KEY_RECENTS, "KEY_RECENTS (580)")
+        }
+        binding.btnNavPower.setOnClickListener {
+            injectHardwareKey(GsiEngine.KEY_POWER, "KEY_POWER (116)")
+        }
+        binding.btnNavVolUp.setOnClickListener {
+            injectHardwareKey(GsiEngine.KEY_VOLUME_UP, "KEY_VOLUME_UP (115)")
+        }
+        binding.btnNavVolDown.setOnClickListener {
+            injectHardwareKey(GsiEngine.KEY_VOLUME_DOWN, "KEY_VOLUME_DOWN (114)")
+        }
+
         // 5. Setup Image Selector
         binding.btnSelectImage.setOnClickListener {
             selectImageLauncher.launch(arrayOf("*/*"))
@@ -377,6 +397,16 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
             val stats = GsiEngine.nativeGetAudioStats()
             appendTerminalOutput("\n[Audio Stats] $stats\n")
         }
+        binding.chipKeyBack.setOnClickListener { binding.btnNavBack.performClick() }
+        binding.chipKeyHome.setOnClickListener { binding.btnNavHome.performClick() }
+        binding.chipKeyRecents.setOnClickListener { binding.btnNavRecents.performClick() }
+        binding.chipKeyPower.setOnClickListener { binding.btnNavPower.performClick() }
+        binding.chipKeyVolUp.setOnClickListener { binding.btnNavVolUp.performClick() }
+        binding.chipKeyVolDown.setOnClickListener { binding.btnNavVolDown.performClick() }
+        binding.chipInputStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetInputStats()
+            appendTerminalOutput("\n[Input Subsystem Stats] $stats\n")
+        }
         binding.chipTestBinder.setOnClickListener {
             val report = GsiEngine.nativeRunBinderDiagnostic()
             appendTerminalOutput("\n" + report + "\n")
@@ -406,7 +436,14 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         GsiForegroundService.startService(this)
     }
 
+    private fun injectHardwareKey(keyCode: Int, keyName: String) {
+        GsiEngine.nativeInjectKeyClick(keyCode)
+        logToConsole("Hardware Key Injected: $keyName")
+        Toast.makeText(this, "Injected $keyName", Toast.LENGTH_SHORT).show()
+    }
+
     private fun executeSandboxCommand(command: String) {
+
         appendTerminalOutput("\n$ $command\n")
         val spawned = GsiEngine.nativeExecuteCommand(command, sandboxDirPath)
         if (spawned) {

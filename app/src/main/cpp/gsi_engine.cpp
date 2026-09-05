@@ -780,4 +780,25 @@ Java_com_gsi_runtime_GsiEngine_nativeGetAudioStats(JNIEnv* env, jobject /* this 
     return env->NewStringUTF(stats.c_str());
 }
 
+// -------------------------------------------------------------
+// Pilar 4: Hardware Navigation & Virtual Input Keys APIs
+// -------------------------------------------------------------
+
+JNIEXPORT void JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInjectKeyEvent(JNIEnv* /* env */, jobject /* this */, jint keyCode, jint action) {
+    gsi::InputBridge::getInstance().injectKeyEvent(keyCode, action);
+}
+
+JNIEXPORT void JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInjectKeyClick(JNIEnv* /* env */, jobject /* this */, jint keyCode) {
+    gsi::InputBridge::getInstance().injectKeyClick(keyCode);
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetInputStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::InputBridge::getInstance().getInputStatsString();
+    return env->NewStringUTF(stats.c_str());
+}
+
 } // extern "C"
+

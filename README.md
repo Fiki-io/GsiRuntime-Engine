@@ -81,6 +81,11 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Intercepts `hw_get_module("audio")` (`HARDWARE_MODULE_TAG = 0x48574D54`) preventing `audioserver` crashes.
     - Redirects `/dev/snd/*` kernel nodes to the virtual PCM audio backing file.
     - Native dual-chord cyber boot chime synthesizer and real-time `AudioTrack` playback stream.
+12. **Hardware Navigation & Virtual Input Keys (Pilar 4)**:
+    - Linux input subsystem keycode emulation (`KEY_BACK=158`, `KEY_HOME=172`, `KEY_RECENTS=580`, `KEY_POWER=116`, `KEY_VOLUMEUP=115`, `KEY_VOLUMEDOWN=114`).
+    - Full click cycle injection (`EV_KEY` press -> `EV_SYN` -> `EV_KEY` release -> `EV_SYN`).
+    - Syscall interception diverting guest `/dev/input/*` (`EventHub`, `InputReader`) to `$SANDBOX/tmp/touch_event`.
+    - Integrated Cyber Navigation Bar UI overlay and terminal chips for instant guest control.
 
 ---
 

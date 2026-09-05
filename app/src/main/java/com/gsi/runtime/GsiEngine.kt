@@ -96,6 +96,18 @@ object GsiEngine {
     external fun nativePlayChime(type: Int = 1): Boolean
     external fun nativeGetAudioStats(): String
 
+    // Hardware Navigation & Virtual Input Keys (Pilar 4)
+    const val KEY_BACK = 158
+    const val KEY_HOME = 172
+    const val KEY_RECENTS = 580
+    const val KEY_POWER = 116
+    const val KEY_VOLUME_UP = 115
+    const val KEY_VOLUME_DOWN = 114
+
+    external fun nativeInjectKeyEvent(keyCode: Int, action: Int)
+    external fun nativeInjectKeyClick(keyCode: Int)
+    external fun nativeGetInputStats(): String
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()
@@ -103,3 +115,4 @@ object GsiEngine {
     external fun nativeStopTestRender()
     external fun nativeGetRenderedFrames(): Int
 }
+

@@ -155,6 +155,9 @@ std::string redirectSandboxPath(const char* path) {
     if (p.rfind("/dev/snd/", 0) == 0) {
         return sandbox + "/tmp/audio_pcm.raw";
     }
+    if (p.rfind("/dev/input/", 0) == 0) {
+        return sandbox + "/tmp/touch_event";
+    }
 
     return p;
 }

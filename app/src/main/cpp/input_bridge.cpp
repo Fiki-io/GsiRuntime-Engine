@@ -85,12 +85,14 @@ void InputBridge::injectTouchEvent(int action, float normX, float normY, int poi
             writeEvent(EV_ABS, ABS_MT_POSITION_Y, pixelY);
             writeEvent(EV_KEY, BTN_TOUCH, 1);
             writeSync();
+            mTotalTouchEvents++;
             break;
 
         case 2: // ACTION_MOVE
             writeEvent(EV_ABS, ABS_MT_POSITION_X, pixelX);
             writeEvent(EV_ABS, ABS_MT_POSITION_Y, pixelY);
             writeSync();
+            mTotalTouchEvents++;
             break;
 
         case 1: // ACTION_UP
@@ -98,6 +100,7 @@ void InputBridge::injectTouchEvent(int action, float normX, float normY, int poi
             writeEvent(EV_ABS, ABS_MT_TRACKING_ID, -1);
             writeEvent(EV_KEY, BTN_TOUCH, 0);
             writeSync();
+            mTotalTouchEvents++;
             break;
 
         default:
@@ -105,4 +108,44 @@ void InputBridge::injectTouchEvent(int action, float normX, float normY, int poi
     }
 }
 
+void InputBridge::injectKeyEvent(int keyCode, int action) {
+    std::lock_guard<std::mutex> lock(mInputMutex);
+    if (mFifoFd < 0) return;
+
+    writeEvent(EV_KEY, static_cast<uint16_t>(keyCode), action != 0 ? 1 : 0);
+    writeSync();
+    mTotalKeyEvents++;
+
+    LOGI("InputBridge: Injected EV_KEY (code=%d, action=%d)", keyCode, action != 0 ? 1 : 0);
+}
+
+void InputBridge::injectKeyClick(int keyCode) {
+    std::lock_guard<std::mutex> lock(mInputMutex);
+    if (mFifoFd < 0) return;
+
+    // Simulate full key click cycle: KEY_DOWN -> SYN -> KEY_UP -> SYN
+    writeEvent(EV_KEY, static_cast<uint16_t>(keyCode), 1);
+    writeSync();
+
+    writeEvent(EV_KEY, static_cast<uint16_t>(keyCode), 0);
+    writeSync();
+
+    mTotalKeyEvents += 2;
+    LOGI("InputBridge: Injected full key click (code=%d: DOWN -> UP)", keyCode);
+}
+
+std::string InputBridge::getInputStatsString() {
+    std::lock_guard<std::mutex> lock(mInputMutex);
+    char buf[256];
+    snprintf(buf, sizeof(buf),
+             "Input Bridge: %s | FIFO: %s | Resolution: %ux%u | Touch Events: %llu | Key Events: %llu",
+             (mFifoFd >= 0 ? "ONLINE" : "OFFLINE"),
+             mFifoPath.c_str(),
+             mScreenWidth, mScreenHeight,
+             static_cast<unsigned long long>(mTotalTouchEvents),
+             static_cast<unsigned long long>(mTotalKeyEvents));
+    return std::string(buf);
+}
+
 } // namespace gsi
+
