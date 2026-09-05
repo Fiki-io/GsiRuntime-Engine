@@ -24,6 +24,7 @@
 #include "include/battery_bridge.h"
 #include "include/sensor_bridge.h"
 #include "include/camera_bridge.h"
+#include "include/storage_bridge.h"
 
 namespace {
     std::mutex gFsMutex;
@@ -915,6 +916,35 @@ JNIEXPORT jstring JNICALL
 Java_com_gsi_runtime_GsiEngine_nativeGetCameraStats(JNIEnv* env, jobject /* this */) {
     std::string stats = gsi::CameraBridge::getInstance().getCameraStatsString();
     return env->NewStringUTF(stats.c_str());
+}
+
+// -------------------------------------------------------------
+// Pilar 8: Multi-User / Storage Emulation & FUSE/sdcardfs APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInitStorage(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    return gsi::StorageBridge::getInstance().initialize(sDir) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetStorageStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::StorageBridge::getInstance().getStorageStatsString();
+    return env->NewStringUTF(stats.c_str());
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativePopulateStorageSamples(JNIEnv* /* env */, jobject /* this */) {
+    return gsi::StorageBridge::getInstance().generateSampleFiles() ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeWipeStorage(JNIEnv* /* env */, jobject /* this */) {
+    return gsi::StorageBridge::getInstance().wipeStorage() ? JNI_TRUE : JNI_FALSE;
 }
 
 } // extern "C"

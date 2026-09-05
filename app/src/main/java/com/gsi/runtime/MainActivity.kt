@@ -241,6 +241,14 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 GsiEngine.nativeStartCameraStream(0, 1280, 720) // Start Back Camera 30 FPS test pattern
                 logToConsole("Virtual Camera HAL Bridge & V4L2 Nodes online (/dev/video0,1 active)")
             }
+
+            // Pilar 8: Initialize Multi-User / Storage Emulation & FUSE/sdcardfs
+            val storageOk = GsiEngine.nativeInitStorage(sandboxDirPath)
+            if (storageOk) {
+                GsiEngine.nativePopulateStorageSamples()
+                binding.tvStorageStatus.text = "Virtual Storage: ONLINE (/storage/emulated/0 | 64GB FUSE ready)"
+                logToConsole("Virtual Storage Bridge online (/storage/emulated/0 | 64GB FUSE ready)")
+            }
         }
 
         // 4. Setup SurfaceView for ANativeWindow pipeline
@@ -529,6 +537,18 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         binding.chipCameraStats.setOnClickListener {
             val stats = GsiEngine.nativeGetCameraStats()
             appendTerminalOutput("\n$stats\n")
+        }
+        binding.chipStorageStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetStorageStats()
+            appendTerminalOutput("\n$stats\n")
+        }
+        binding.chipStorageSample.setOnClickListener {
+            val ok = GsiEngine.nativePopulateStorageSamples()
+            appendTerminalOutput(if (ok) "\n[Storage Bridge] Sample media files generated in /sdcard (Download, DCIM, Documents)\n" else "\n[Storage Bridge] Failed to generate samples\n")
+        }
+        binding.chipStorageWipe.setOnClickListener {
+            val ok = GsiEngine.nativeWipeStorage()
+            appendTerminalOutput(if (ok) "\n[Storage Bridge] Storage wiped and standard directory hierarchy reseeded\n" else "\n[Storage Bridge] Wipe failed\n")
         }
         binding.chipTestBinder.setOnClickListener {
             val report = GsiEngine.nativeRunBinderDiagnostic()

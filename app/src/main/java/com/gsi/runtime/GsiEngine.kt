@@ -142,6 +142,12 @@ object GsiEngine {
     external fun nativeGetCameraFrameCount(cameraId: Int): Int
     external fun nativeGetCameraStats(): String
 
+    // Multi-User / Storage Emulation & FUSE/sdcardfs (Pilar 8)
+    external fun nativeInitStorage(sandboxDir: String): Boolean
+    external fun nativeGetStorageStats(): String
+    external fun nativePopulateStorageSamples(): Boolean
+    external fun nativeWipeStorage(): Boolean
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()

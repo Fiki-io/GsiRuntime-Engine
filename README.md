@@ -104,6 +104,13 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Real-time 30 FPS YUYV/RGB frame generator with animated SMPTE color bars and cyber neon scanline indicators.
     - Direct syscall redirection of `/dev/video*` to sandbox storage nodes (`$SANDBOX/tmp/v4l2_video0.raw`, `$SANDBOX/tmp/v4l2_video1.raw`).
     - Interactive camera stream control chips (`[cam_start]`, `[cam_stop]`, `[cam_switch]`, `[camera_stats]`).
+16. **Multi-User / Storage Emulation & FUSE/sdcardfs Isolation Bridge (Pilar 8)**:
+    - User-space Virtual Storage Subsystem emulating `/storage/emulated/0` -> `$SANDBOX/data/media/0` and `/sdcard`.
+    - Automatic bootstrapping of standard Android media directory hierarchy (`DCIM/Camera`, `Pictures/Screenshots`, `Download`, `Music`, `Movies`, `Documents`, `Android/data`, `Android/obb`).
+    - Syscall hooks for `mount()` and `umount2()` faking success to prevent `vold` and init script failures.
+    - Filesystem metric spoofing via `statfs`, `statfs64`, `statvfs`, and `statvfs64` reporting 64 GB capacity with ~56 GB free space, completely eliminating Android `LowStorageException` and APK installation denials.
+    - Synthetic `/proc/mounts` provider and `/dev/fuse` redirection.
+    - Interactive storage management chips (`[storage_stats]`, `[storage_sample]`, `[storage_wipe]`).
 
 ---
 

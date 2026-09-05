@@ -10,10 +10,15 @@
 #include <fcntl.h>
 #include <cstdarg>
 #include <cstring>
+#include <cerrno>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/prctl.h>
+#include <sys/stat.h>
+#include <sys/vfs.h>
+#include <sys/statvfs.h>
+#include <sys/mount.h>
 #include <netinet/in.h>
 #include <atomic>
 #include <vector>
@@ -176,6 +181,48 @@ std::string redirectSandboxPath(const char* path) {
     if (p.rfind("/dev/video", 0) == 0) {
         return sandbox + "/tmp/v4l2_video0.raw";
     }
+    if (p == "/sdcard") {
+        return sandbox + "/data/media/0";
+    }
+    if (p.rfind("/sdcard/", 0) == 0) {
+        return sandbox + "/data/media/0" + p.substr(7);
+    }
+    if (p == "/storage/emulated/0") {
+        return sandbox + "/data/media/0";
+    }
+    if (p.rfind("/storage/emulated/0/", 0) == 0) {
+        return sandbox + "/data/media/0" + p.substr(19);
+    }
+    if (p == "/storage/self/primary") {
+        return sandbox + "/data/media/0";
+    }
+    if (p.rfind("/storage/self/primary/", 0) == 0) {
+        return sandbox + "/data/media/0" + p.substr(21);
+    }
+    if (p == "/data/media/0") {
+        return sandbox + "/data/media/0";
+    }
+    if (p.rfind("/data/media/0/", 0) == 0) {
+        return sandbox + "/data/media/0" + p.substr(13);
+    }
+    if (p == "/data/media") {
+        return sandbox + "/data/media";
+    }
+    if (p.rfind("/data/media/", 0) == 0) {
+        return sandbox + "/data/media" + p.substr(11);
+    }
+    if (p == "/storage/emulated") {
+        return sandbox + "/data/media";
+    }
+    if (p.rfind("/storage/emulated/", 0) == 0) {
+        return sandbox + "/data/media" + p.substr(17);
+    }
+    if (p == "/proc/mounts") {
+        return sandbox + "/proc/mounts";
+    }
+    if (p == "/dev/fuse") {
+        return sandbox + "/tmp/dev_fuse.raw";
+    }
 
     return p;
 }
@@ -312,9 +359,97 @@ int mount(const char* source, const char* target,
     return 0; // Return success to allow bootstrap scripts to proceed
 }
 
+int umount(const char* target) {
+    LOGI("Hook: Intercepted umount(target=\"%s\") -> Faking SUCCESS", target ? target : "none");
+    return 0;
+}
+
+int umount2(const char* target, int flags) {
+    LOGI("Hook: Intercepted umount2(target=\"%s\", flags=%d) -> Faking SUCCESS", target ? target : "none", flags);
+    return 0;
+}
+
 int chroot(const char* path) {
     LOGI("Hook: Intercepted chroot(path=\"%s\") -> Faking SUCCESS (EPERM bypass)", path ? path : "/");
     return 0; // Return success
+}
+
+int statfs(const char* path, struct statfs* buf) {
+    if (!buf) {
+        errno = EFAULT;
+        return -1;
+    }
+    std::memset(buf, 0, sizeof(*buf));
+    buf->f_type = 0x65735546; // FUSE_SUPER_MAGIC
+    buf->f_bsize = 4096;
+    buf->f_blocks = 16777216ULL; // 64 GB
+    buf->f_bfree = 14680064ULL;  // ~56 GB free
+    buf->f_bavail = 14680064ULL; // ~56 GB avail
+    buf->f_files = 1000000;
+    buf->f_ffree = 950000;
+    buf->f_namelen = 255;
+    buf->f_frsize = 4096;
+    buf->f_flags = 0;
+    return 0;
+}
+
+int statfs64(const char* path, struct statfs64* buf) {
+    return statfs(path, reinterpret_cast<struct statfs*>(buf));
+}
+
+int statvfs(const char* path, struct statvfs* buf) {
+    if (!buf) {
+        errno = EFAULT;
+        return -1;
+    }
+    std::memset(buf, 0, sizeof(*buf));
+    buf->f_bsize = 4096;
+    buf->f_frsize = 4096;
+    buf->f_blocks = 16777216ULL; // 64 GB
+    buf->f_bfree = 14680064ULL;  // ~56 GB free
+    buf->f_bavail = 14680064ULL; // ~56 GB avail
+    buf->f_files = 1000000;
+    buf->f_ffree = 950000;
+    buf->f_favail = 950000;
+    buf->f_namemax = 255;
+    return 0;
+}
+
+int statvfs64(const char* path, struct statvfs64* buf) {
+    return statvfs(path, reinterpret_cast<struct statvfs*>(buf));
+}
+
+int stat(const char* path, struct stat* sb) {
+    if (path) {
+        std::string redirected = redirectSandboxPath(path);
+        static auto real = reinterpret_cast<int (*)(const char*, struct stat*)>(dlsym(RTLD_NEXT, "stat"));
+        if (real) return real(redirected.c_str(), sb);
+        return fstatat(AT_FDCWD, redirected.c_str(), sb, 0);
+    }
+    errno = EFAULT;
+    return -1;
+}
+
+int lstat(const char* path, struct stat* sb) {
+    if (path) {
+        std::string redirected = redirectSandboxPath(path);
+        static auto real = reinterpret_cast<int (*)(const char*, struct stat*)>(dlsym(RTLD_NEXT, "lstat"));
+        if (real) return real(redirected.c_str(), sb);
+        return fstatat(AT_FDCWD, redirected.c_str(), sb, AT_SYMLINK_NOFOLLOW);
+    }
+    errno = EFAULT;
+    return -1;
+}
+
+int access(const char* path, int mode) {
+    if (path) {
+        std::string redirected = redirectSandboxPath(path);
+        static auto real = reinterpret_cast<int (*)(const char*, int)>(dlsym(RTLD_NEXT, "access"));
+        if (real) return real(redirected.c_str(), mode);
+        return faccessat(AT_FDCWD, redirected.c_str(), mode, 0);
+    }
+    errno = EFAULT;
+    return -1;
 }
 
 int close(int fd) {

@@ -38,6 +38,7 @@ add_library(
     battery_bridge.cpp
     sensor_bridge.cpp
     camera_bridge.cpp
+    storage_bridge.cpp
 )
 
 target_link_libraries(
