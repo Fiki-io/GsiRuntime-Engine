@@ -148,6 +148,12 @@ object GsiEngine {
     external fun nativePopulateStorageSamples(): Boolean
     external fun nativeWipeStorage(): Boolean
 
+    // Virtual Wi-Fi & Cellular RIL / Telephony (Pilar 9)
+    external fun nativeInitTelephony(sandboxDir: String): Boolean
+    external fun nativeToggleSim(enabled: Boolean): Boolean
+    external fun nativeToggleWifi(connected: Boolean): Boolean
+    external fun nativeGetTelephonyStats(): String
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()

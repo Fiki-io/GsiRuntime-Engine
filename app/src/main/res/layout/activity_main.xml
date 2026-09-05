@@ -178,6 +178,16 @@
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
+                <TextView
+                    android:id="@+id/tvTelephonyStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="2dp"
+                    android:text="Virtual Telephony &amp; Wi-Fi: ONLINE (SIM: CyberGSI 5G [5 bars] | Wi-Fi: 866Mbps)"
+                    android:textColor="@color/primary_cyan"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
 
                 <TextView
                     android:id="@+id/tvHostRam"
@@ -1219,6 +1229,44 @@
                             android:backgroundTint="@color/surface_border"
                             android:text="storage_wipe"
                             android:textColor="@color/accent_red"
+                            android:textSize="11sp"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipRilStats"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/primary_cyan_dark"
+                            android:text="ril_stats"
+                            android:textColor="@color/bg_dark"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipSimToggle"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/accent_green"
+                            android:text="sim_toggle"
+                            android:textColor="@color/bg_dark"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipWifiToggle"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/surface_border"
+                            android:text="wifi_toggle"
+                            android:textColor="@color/primary_cyan"
                             android:textSize="11sp"
                             app:cornerRadius="18dp" />
 

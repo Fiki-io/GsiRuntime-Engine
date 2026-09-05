@@ -111,6 +111,13 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Filesystem metric spoofing via `statfs`, `statfs64`, `statvfs`, and `statvfs64` reporting 64 GB capacity with ~56 GB free space, completely eliminating Android `LowStorageException` and APK installation denials.
     - Synthetic `/proc/mounts` provider and `/dev/fuse` redirection.
     - Interactive storage management chips (`[storage_stats]`, `[storage_sample]`, `[storage_wipe]`).
+17. **Virtual Wi-Fi & Cellular RIL / Telephony Stub Subsystem (Pilar 9)**:
+    - User-space Radio Interface Layer (RIL) daemon emulating UNIX domain sockets `/dev/socket/rild` and `/dev/socket/rild-debug`.
+    - Virtual Wi-Fi control socket `/dev/socket/wpa_wlan0` emulation for `wpa_supplicant`.
+    - Radio and Wi-Fi HAL module interception via `hw_get_module("radio")` and `hw_get_module("wifi")` returning valid HAL descriptor `0x48574D54` to stop `com.android.phone` and `WifiService` crash loops.
+    - Full Virtual 5G SIM telemetry (Carrier: "CyberGSI 5G", MCC/MNC: 310-260, Signal: 5/5 bars, IMEI: 860123456789012, Data: CONNECTED).
+    - Virtual Wi-Fi networking state (SSID: "GSI-Virtual-WiFi", IP: 192.168.1.150, Speed: 866 Mbps 802.11ac, RSSI: -42 dBm).
+    - Interactive hardware toggling chips (`[ril_stats]`, `[sim_toggle]`, `[wifi_toggle]`).
 
 ---
 

@@ -249,6 +249,13 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 binding.tvStorageStatus.text = "Virtual Storage: ONLINE (/storage/emulated/0 | 64GB FUSE ready)"
                 logToConsole("Virtual Storage Bridge online (/storage/emulated/0 | 64GB FUSE ready)")
             }
+
+            // Pilar 9: Initialize Virtual Wi-Fi & Cellular RIL / Telephony Bridge
+            val telOk = GsiEngine.nativeInitTelephony(sandboxDirPath)
+            if (telOk) {
+                binding.tvTelephonyStatus.text = "Virtual Telephony & Wi-Fi: ONLINE (SIM: CyberGSI 5G [5 bars] | Wi-Fi: 866Mbps)"
+                logToConsole("Virtual Telephony & Wi-Fi Bridge online (/dev/socket/rild active)")
+            }
         }
 
         // 4. Setup SurfaceView for ANativeWindow pipeline
@@ -549,6 +556,26 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         binding.chipStorageWipe.setOnClickListener {
             val ok = GsiEngine.nativeWipeStorage()
             appendTerminalOutput(if (ok) "\n[Storage Bridge] Storage wiped and standard directory hierarchy reseeded\n" else "\n[Storage Bridge] Wipe failed\n")
+        }
+        var simInserted = true
+        binding.chipSimToggle.setOnClickListener {
+            simInserted = !simInserted
+            GsiEngine.nativeToggleSim(simInserted)
+            binding.tvTelephonyStatus.text = if (simInserted)
+                "Virtual Telephony & Wi-Fi: ONLINE (SIM: CyberGSI 5G [5 bars] | Wi-Fi: 866Mbps)"
+            else
+                "Virtual Telephony & Wi-Fi: ONLINE (SIM: ABSENT [No Signal] | Wi-Fi: 866Mbps)"
+            appendTerminalOutput("\n[Telephony RIL] SIM Card toggled: ${if (simInserted) "INSERTED (CyberGSI 5G)" else "REMOVED (No SIM)"}\n")
+        }
+        var wifiConnected = true
+        binding.chipWifiToggle.setOnClickListener {
+            wifiConnected = !wifiConnected
+            GsiEngine.nativeToggleWifi(wifiConnected)
+            appendTerminalOutput("\n[Wi-Fi Subsystem] Wi-Fi toggled: ${if (wifiConnected) "CONNECTED (866 Mbps)" else "DISCONNECTED"}\n")
+        }
+        binding.chipRilStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetTelephonyStats()
+            appendTerminalOutput("\n$stats\n")
         }
         binding.chipTestBinder.setOnClickListener {
             val report = GsiEngine.nativeRunBinderDiagnostic()

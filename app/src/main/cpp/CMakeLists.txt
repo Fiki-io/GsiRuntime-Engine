@@ -39,6 +39,7 @@ add_library(
     sensor_bridge.cpp
     camera_bridge.cpp
     storage_bridge.cpp
+    telephony_bridge.cpp
 )
 
 target_link_libraries(

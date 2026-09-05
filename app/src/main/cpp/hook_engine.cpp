@@ -223,6 +223,15 @@ std::string redirectSandboxPath(const char* path) {
     if (p == "/dev/fuse") {
         return sandbox + "/tmp/dev_fuse.raw";
     }
+    if (p == "/dev/socket/rild") {
+        return sandbox + "/dev/socket/rild";
+    }
+    if (p == "/dev/socket/rild-debug") {
+        return sandbox + "/dev/socket/rild-debug";
+    }
+    if (p == "/dev/socket/wpa_wlan0") {
+        return sandbox + "/dev/socket/wpa_wlan0";
+    }
 
     return p;
 }
@@ -980,6 +989,30 @@ int hw_get_module(const char* id, const void** module) {
         {}
     };
 
+    static VirtualHwModule radioModule = {
+        0x48574D54,
+        1,
+        0,
+        "radio",
+        "Virtual GSI Radio / RIL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
+    static VirtualHwModule wifiModule = {
+        0x48574D54,
+        1,
+        0,
+        "wifi",
+        "Virtual GSI Wi-Fi HAL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
     if (strcmp(id, "gralloc") == 0) {
         *module = &grallocModule;
         return 0;
@@ -998,6 +1031,14 @@ int hw_get_module(const char* id, const void** module) {
     }
     if (strcmp(id, "camera") == 0) {
         *module = &cameraModule;
+        return 0;
+    }
+    if (strcmp(id, "radio") == 0) {
+        *module = &radioModule;
+        return 0;
+    }
+    if (strcmp(id, "wifi") == 0) {
+        *module = &wifiModule;
         return 0;
     }
 

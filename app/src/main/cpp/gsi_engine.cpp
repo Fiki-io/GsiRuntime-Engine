@@ -25,6 +25,7 @@
 #include "include/sensor_bridge.h"
 #include "include/camera_bridge.h"
 #include "include/storage_bridge.h"
+#include "include/telephony_bridge.h"
 
 namespace {
     std::mutex gFsMutex;
@@ -945,6 +946,35 @@ Java_com_gsi_runtime_GsiEngine_nativePopulateStorageSamples(JNIEnv* /* env */, j
 JNIEXPORT jboolean JNICALL
 Java_com_gsi_runtime_GsiEngine_nativeWipeStorage(JNIEnv* /* env */, jobject /* this */) {
     return gsi::StorageBridge::getInstance().wipeStorage() ? JNI_TRUE : JNI_FALSE;
+}
+
+// -------------------------------------------------------------
+// Pilar 9: Virtual Wi-Fi & Cellular RIL / Telephony APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInitTelephony(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    return gsi::TelephonyBridge::getInstance().initialize(sDir) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeToggleSim(JNIEnv* /* env */, jobject /* this */, jboolean enabled) {
+    return gsi::TelephonyBridge::getInstance().toggleSim(enabled == JNI_TRUE) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeToggleWifi(JNIEnv* /* env */, jobject /* this */, jboolean connected) {
+    return gsi::TelephonyBridge::getInstance().toggleWifi(connected == JNI_TRUE) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetTelephonyStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::TelephonyBridge::getInstance().getTelephonyStatsString();
+    return env->NewStringUTF(stats.c_str());
 }
 
 } // extern "C"
