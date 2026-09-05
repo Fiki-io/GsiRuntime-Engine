@@ -46,6 +46,7 @@ add_library(
     drm_bridge.cpp
     keystore_bridge.cpp
     gpu_bridge.cpp
+    usb_bridge.cpp
 )
 
 target_link_libraries(

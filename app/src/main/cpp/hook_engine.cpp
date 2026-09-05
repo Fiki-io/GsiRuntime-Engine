@@ -262,6 +262,15 @@ std::string redirectSandboxPath(const char* path) {
     if (p == "/dev/dri/renderD128") {
         return sandbox + "/tmp/dev_dri_renderD128.raw";
     }
+    if (p == "/dev/usb_accessory") {
+        return sandbox + "/tmp/dev_usb_accessory.raw";
+    }
+    if (p == "/dev/mtp_usb") {
+        return sandbox + "/tmp/dev_mtp_usb.raw";
+    }
+    if (p == "/dev/android_adb") {
+        return sandbox + "/tmp/dev_android_adb.raw";
+    }
 
     return p;
 }
@@ -1115,6 +1124,18 @@ int hw_get_module(const char* id, const void** module) {
         {}
     };
 
+    static VirtualHwModule usbModule = {
+        0x48574D54,
+        1,
+        2,
+        "usb",
+        "Virtual GSI USB Gadget HAL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
     if (strcmp(id, "gralloc") == 0) {
         *module = &grallocModule;
         return 0;
@@ -1171,6 +1192,11 @@ int hw_get_module(const char* id, const void** module) {
         *module = &grallocModule;
         return 0;
     }
+    if (strcmp(id, "usb") == 0) {
+        *module = &usbModule;
+        return 0;
+    }
+
 
     static auto realHwGet = reinterpret_cast<int (*)(const char*, const void**)>(dlsym(RTLD_NEXT, "hw_get_module"));
     if (realHwGet) {

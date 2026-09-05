@@ -284,7 +284,15 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 binding.tvGpuStatus.text = "Virtual GPU & EGL: ONLINE (OpenGL ES 3.2 Passthrough | Host GPU Blit)"
                 logToConsole("Virtual GPU & EGL Passthrough Bridge online (OpenGL ES 3.2 ready)")
             }
+
+            // Pilar 14: Initialize Virtual USB Gadget & In-Sandbox ADB Server Bridge
+            val usbOk = GsiEngine.nativeInitUsb(sandboxDirPath, 5555)
+            if (usbOk) {
+                binding.tvUsbStatus.text = "Virtual USB & ADB: ONLINE (Gadget: adb,mtp | TCP 5555 Server Listening)"
+                logToConsole("Virtual USB Gadget & ADB Server Bridge online (TCP port 5555 active)")
+            }
         }
+
 
         // 4. Setup SurfaceView for ANativeWindow pipeline
         binding.surfaceView.holder.addCallback(this)
@@ -714,7 +722,26 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
             GsiEngine.nativeClearVfbColor(0xFF00E5FF.toInt()) // Neon Cyan flash
             appendTerminalOutput("\n[GL Clear] Framebuffer cleared with Neon Cyan (0xFF00E5FF)\n")
         }
+        binding.chipAdbStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetUsbStats()
+            appendTerminalOutput("\n$stats\n")
+        }
+        var adbServerRunning = true
+        binding.chipAdbToggle.setOnClickListener {
+            adbServerRunning = !adbServerRunning
+            GsiEngine.nativeToggleAdbServer(adbServerRunning)
+            binding.tvUsbStatus.text = if (adbServerRunning)
+                "Virtual USB & ADB: ONLINE (Gadget: adb,mtp | TCP 5555 Server Listening)"
+            else
+                "Virtual USB & ADB: OFFLINE (Gadget: adb,mtp | ADB Server Stopped)"
+            appendTerminalOutput("\n[Virtual USB & ADB] ADB TCP Server toggled: ${if (adbServerRunning) "RUNNING (Port 5555)" else "STOPPED"}\n")
+        }
+        binding.chipAdbTestConn.setOnClickListener {
+            val res = GsiEngine.nativeSimulateAdbConnection()
+            appendTerminalOutput("\n$res\n")
+        }
         binding.chipExtractGsi.setOnClickListener {
+
             binding.btnExtractEssential.performClick()
         }
         binding.chipRunGsiTests.setOnClickListener {

@@ -183,6 +183,13 @@ object GsiEngine {
     external fun nativeClearVfbColor(colorRgba: Int): Boolean
     external fun nativeGetGpuStats(): String
 
+    // Virtual USB Gadget & In-Sandbox ADB Server Bridge (Pilar 14)
+    external fun nativeInitUsb(sandboxDir: String, tcpPort: Int): Boolean
+    external fun nativeToggleAdbServer(start: Boolean): Boolean
+    external fun nativeSimulateAdbConnection(): String
+    external fun nativeGetUsbStats(): String
+
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()

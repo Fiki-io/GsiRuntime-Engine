@@ -32,6 +32,8 @@
 #include "include/drm_bridge.h"
 #include "include/keystore_bridge.h"
 #include "include/gpu_bridge.h"
+#include "include/usb_bridge.h"
+
 
 namespace {
     std::mutex gFsMutex;
@@ -1146,7 +1148,43 @@ Java_com_gsi_runtime_GsiEngine_nativeGetGpuStats(JNIEnv* env, jobject /* this */
     return env->NewStringUTF(stats.c_str());
 }
 
+// -------------------------------------------------------------
+// Pilar 14: Virtual USB Gadget & ADB Server Bridge APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInitUsb(JNIEnv* env, jobject /* this */, jstring jSandboxDir, jint tcpPort) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    return gsi::UsbBridge::getInstance().initialize(sDir, tcpPort) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeToggleAdbServer(JNIEnv* /* env */, jobject /* this */, jboolean start) {
+    if (start == JNI_TRUE) {
+        return gsi::UsbBridge::getInstance().startAdbServer() ? JNI_TRUE : JNI_FALSE;
+    } else {
+        gsi::UsbBridge::getInstance().stopAdbServer();
+        return JNI_TRUE;
+    }
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeSimulateAdbConnection(JNIEnv* env, jobject /* this */) {
+    std::string res = gsi::UsbBridge::getInstance().simulateLocalAdbConnection();
+    return env->NewStringUTF(res.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetUsbStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::UsbBridge::getInstance().getUsbStatsString();
+    return env->NewStringUTF(stats.c_str());
+}
+
 } // extern "C"
+
 
 
 

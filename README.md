@@ -157,6 +157,14 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Standard EGL function interception (`eglGetDisplay`, `eglInitialize`, `eglQueryString`) and HAL module interception for `egl`/`gpu` to eliminate `NO_INIT` crashes in guest UI services.
     - System properties synchronization (`ro.hardware.egl`, `ro.opengles.version = 196610`, `debug.sf.showfps = 1`, `vendor.gpu.status = ONLINE`).
     - Interactive hardware control chips: `[gpu_stats]`, `[gpu_test]`, `[gl_clear]`.
+23. **Virtual USB Gadget & In-Sandbox ADB Server Bridge (Pilar 14)**:
+    - In-sandbox ADB server listening on TCP port 5555 (`service.adb.tcp.port = 5555`), accepting guest and host ADB client connections.
+    - Virtual USB Gadget device node emulation (`/dev/android_adb`, `/dev/mtp_usb`, `/dev/usb_accessory`) backed by `$SANDBOX/tmp/dev_android_adb.raw` to fulfill Linux USB gadget driver expectations.
+    - HAL module interception for `hw_get_module("usb")` returning valid descriptor `0x48574D54` to satisfy Android `UsbService` and `adbd`.
+    - Permissive debug authentication bypass (`ro.adb.secure = 0`, `ro.debuggable = 1`, `persist.sys.usb.config = adb`).
+    - CNXN handshake protocol implementation and shell channel multiplexing.
+    - Interactive hardware control chips: `[adb_stats]`, `[adb_toggle]`, `[adb_test_conn]`.
+
 
 ---
 
