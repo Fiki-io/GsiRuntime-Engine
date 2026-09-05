@@ -108,6 +108,19 @@ object GsiEngine {
     external fun nativeInjectKeyClick(keyCode: Int)
     external fun nativeGetInputStats(): String
 
+    // Virtual Battery & Power Management Subsystem (Pilar 5)
+    external fun nativeInitBattery(sandboxDir: String): Boolean
+    external fun nativeUpdateBattery(
+        capacity: Int,
+        status: String = "Charging",
+        health: String = "Good",
+        voltageMv: Int = 4200,
+        tempTenthsC: Int = 300,
+        isPluggedAc: Boolean = true,
+        isPluggedUsb: Boolean = false
+    ): Boolean
+    external fun nativeGetBatteryStats(): String
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()

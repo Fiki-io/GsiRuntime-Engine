@@ -21,6 +21,7 @@
 #include "include/network_bridge.h"
 #include "include/logcat_broker.h"
 #include "include/audio_bridge.h"
+#include "include/battery_bridge.h"
 
 namespace {
     std::mutex gFsMutex;
@@ -800,5 +801,52 @@ Java_com_gsi_runtime_GsiEngine_nativeGetInputStats(JNIEnv* env, jobject /* this 
     return env->NewStringUTF(stats.c_str());
 }
 
+// -------------------------------------------------------------
+// Pilar 5: Virtual Battery & Power Management Subsystem APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInitBattery(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    return gsi::BatteryBridge::getInstance().initialize(sDir) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeUpdateBattery(JNIEnv* env, jobject /* this */,
+                                                  jint capacity,
+                                                  jstring jStatus,
+                                                  jstring jHealth,
+                                                  jint voltageMv,
+                                                  jint tempTenthsC,
+                                                  jboolean isPluggedAc,
+                                                  jboolean isPluggedUsb) {
+    const char* statusChars = jStatus ? env->GetStringUTFChars(jStatus, nullptr) : nullptr;
+    const char* healthChars = jHealth ? env->GetStringUTFChars(jHealth, nullptr) : nullptr;
+    std::string sStatus = statusChars ? statusChars : "Charging";
+    std::string sHealth = healthChars ? healthChars : "Good";
+    if (statusChars) env->ReleaseStringUTFChars(jStatus, statusChars);
+    if (healthChars) env->ReleaseStringUTFChars(jHealth, healthChars);
+
+    return gsi::BatteryBridge::getInstance().updateBattery(
+        capacity,
+        sStatus,
+        sHealth,
+        voltageMv,
+        tempTenthsC,
+        isPluggedAc == JNI_TRUE,
+        isPluggedUsb == JNI_TRUE
+    ) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetBatteryStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::BatteryBridge::getInstance().getBatteryStatsString();
+    return env->NewStringUTF(stats.c_str());
+}
+
 } // extern "C"
+
 

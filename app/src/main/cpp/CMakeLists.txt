@@ -35,6 +35,7 @@ add_library(
     network_bridge.cpp
     logcat_broker.cpp
     audio_bridge.cpp
+    battery_bridge.cpp
 )
 
 target_link_libraries(

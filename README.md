@@ -86,6 +86,12 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Full click cycle injection (`EV_KEY` press -> `EV_SYN` -> `EV_KEY` release -> `EV_SYN`).
     - Syscall interception diverting guest `/dev/input/*` (`EventHub`, `InputReader`) to `$SANDBOX/tmp/touch_event`.
     - Integrated Cyber Navigation Bar UI overlay and terminal chips for instant guest control.
+13. **Virtual Battery & Power Management Subsystem (Pilar 5)**:
+    - Synthetic Linux sysfs power supply hierarchy (`$SANDBOX/sys/class/power_supply/battery/` and `{ac,usb}/`).
+    - Full sysfs node support: `capacity`, `status`, `health`, `present`, `technology`, `voltage_now`, `current_now`, `temp`, and aggregated `uevent` block for Android `healthd`.
+    - Real-time automatic synchronization with host Android battery via `GsiBatteryManager` (`ACTION_BATTERY_CHANGED`).
+    - In-process syscall redirection of `/sys/class/power_supply/*` in `libgsi_hook.so`.
+    - Interactive spoofing chips (`[bat_sync]`, `[bat_100]`, `[bat_50]`, `[bat_15]`, `[bat_plug]`, `[battery_stats]`).
 
 ---
 

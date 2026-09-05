@@ -192,6 +192,31 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 GsiAudioPlayer.start()
                 logToConsole("Virtual Audio HAL (48kHz Stereo 16-bit) & AudioTrack Bridge online")
             }
+
+            // Pilar 5: Initialize Virtual Battery & Power Management Subsystem
+            val batOk = GsiEngine.nativeInitBattery(sandboxDirPath)
+            if (batOk) {
+                GsiBatteryManager.start(this)
+                GsiBatteryManager.onStateChangedListener = { state ->
+                    runOnUiThread {
+                        val plugStr = if (state.isPluggedAc) " [AC]" else if (state.isPluggedUsb) " [USB]" else ""
+                        val syncStr = if (state.isAutoSync) " (Host-Synced)" else " (Spoofed)"
+                        binding.tvBatteryStatus.text = String.format(
+                            Locale.US,
+                            "Virtual Battery & Power: ONLINE (%d%% %s%s, %s, %s%s | Sysfs)",
+                            state.capacity, state.status, plugStr, state.displayVoltage, state.displayTemp, syncStr
+                        )
+                        if (state.capacity <= 15) {
+                            binding.tvBatteryStatus.setTextColor(getColor(R.color.accent_red))
+                        } else if (state.capacity <= 30) {
+                            binding.tvBatteryStatus.setTextColor(getColor(R.color.accent_yellow))
+                        } else {
+                            binding.tvBatteryStatus.setTextColor(getColor(R.color.primary_cyan))
+                        }
+                    }
+                }
+                logToConsole("Virtual Battery & Power Management Subsystem online (sysfs power_supply active)")
+            }
         }
 
         // 4. Setup SurfaceView for ANativeWindow pipeline
@@ -406,6 +431,34 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         binding.chipInputStats.setOnClickListener {
             val stats = GsiEngine.nativeGetInputStats()
             appendTerminalOutput("\n[Input Subsystem Stats] $stats\n")
+        }
+        binding.chipBatSync.setOnClickListener {
+            GsiBatteryManager.setAutoSync(true, this)
+            val state = GsiBatteryManager.currentState
+            appendTerminalOutput("\n[Battery Sync] Synced with Host Android: ${state.capacity}% (${state.status}, ${state.displayVoltage}, ${state.displayTemp})\n")
+        }
+        binding.chipBat100.setOnClickListener {
+            GsiBatteryManager.spoofBattery(100, "Full", "Good", 4200, 280, isPluggedAc = true, isPluggedUsb = false)
+            appendTerminalOutput("\n[Battery Spoof] Set to 100% Full (AC Plugged, 4.20V, 28.0°C)\n")
+        }
+        binding.chipBat50.setOnClickListener {
+            GsiBatteryManager.spoofBattery(50, "Discharging", "Good", 3850, 310, isPluggedAc = false, isPluggedUsb = false)
+            appendTerminalOutput("\n[Battery Spoof] Set to 50% Discharging (3.85V, 31.0°C)\n")
+        }
+        binding.chipBat15.setOnClickListener {
+            GsiBatteryManager.spoofBattery(15, "Discharging", "Good", 3600, 330, isPluggedAc = false, isPluggedUsb = false)
+            appendTerminalOutput("\n[Battery Spoof] Set to 15% Low Battery (3.60V, 33.0°C)\n")
+        }
+        binding.chipBatPlug.setOnClickListener {
+            val curr = GsiBatteryManager.currentState
+            val newPlug = !curr.isPluggedAc
+            val newStatus = if (newPlug) "Charging" else "Discharging"
+            GsiBatteryManager.spoofBattery(curr.capacity, newStatus, curr.health, curr.voltageMv, curr.tempTenthsC, isPluggedAc = newPlug, isPluggedUsb = false)
+            appendTerminalOutput("\n[Battery Charger] AC Charger toggled to: ${if (newPlug) "CONNECTED (Charging)" else "DISCONNECTED (Discharging)"}\n")
+        }
+        binding.chipBatStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetBatteryStats()
+            appendTerminalOutput("\n$stats\n")
         }
         binding.chipTestBinder.setOnClickListener {
             val report = GsiEngine.nativeRunBinderDiagnostic()
@@ -819,6 +872,7 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         handler.removeCallbacks(bootPhaseRunnable)
         GsiEngine.nativeStopBootSequence()
         GsiAudioPlayer.stop()
+        GsiBatteryManager.stop(this)
         GsiEngine.nativeShutdownAudio()
         GsiEngine.nativeShutdownLogcatBroker()
         GsiEngine.nativeShutdownNetwork()

@@ -158,6 +158,12 @@ std::string redirectSandboxPath(const char* path) {
     if (p.rfind("/dev/input/", 0) == 0) {
         return sandbox + "/tmp/touch_event";
     }
+    if (p.rfind("/sys/class/power_supply/", 0) == 0) {
+        return sandbox + "/sys/class/power_supply/" + p.substr(24);
+    }
+    if (p.rfind("/sys/devices/virtual/power_supply/", 0) == 0) {
+        return sandbox + "/sys/class/power_supply/" + p.substr(34);
+    }
 
     return p;
 }
