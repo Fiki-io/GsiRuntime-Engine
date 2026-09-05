@@ -135,6 +135,13 @@ object GsiEngine {
     ): Boolean
     external fun nativeGetSensorStats(): String
 
+    // Virtual Camera & Media Codec Stub HAL (Pilar 7)
+    external fun nativeInitCamera(sandboxDir: String): Boolean
+    external fun nativeStartCameraStream(cameraId: Int, width: Int = 1280, height: Int = 720): Boolean
+    external fun nativeStopCameraStream(cameraId: Int)
+    external fun nativeGetCameraFrameCount(cameraId: Int): Int
+    external fun nativeGetCameraStats(): String
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()

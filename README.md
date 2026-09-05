@@ -98,6 +98,12 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Android Sensors HAL module interception via `hw_get_module("sensors")` in `libgsi_hook.so` (`HARDWARE_MODULE_TAG = 0x48574D54`).
     - Real-time host device motion mirroring via `GsiSensorManager` and continuous streaming FIFO pipe (`$SANDBOX/tmp/sensor_event`).
     - Motion spoofing chips (`[sensor_sync]`, `[orient_portrait]`, `[orient_landscape]`, `[shake_device]`, `[prox_near]`, `[sensor_stats]`).
+15. **Virtual Camera & Media Codec Stub HAL Subsystem (Pilar 7)**:
+    - User-space Virtual Video4Linux2 (V4L2) kernel device emulation: `/dev/video0` (Back Camera, 1280x720 HD) & `/dev/video1` (Front Camera, 640x480 VGA).
+    - `hw_get_module("camera")` HAL interception in `libgsi_hook.so` returning valid `camera_module_t` (`0x48574D54`) to satisfy Android `cameraserver` and prevent crash loops.
+    - Real-time 30 FPS YUYV/RGB frame generator with animated SMPTE color bars and cyber neon scanline indicators.
+    - Direct syscall redirection of `/dev/video*` to sandbox storage nodes (`$SANDBOX/tmp/v4l2_video0.raw`, `$SANDBOX/tmp/v4l2_video1.raw`).
+    - Interactive camera stream control chips (`[cam_start]`, `[cam_stop]`, `[cam_switch]`, `[camera_stats]`).
 
 ---
 

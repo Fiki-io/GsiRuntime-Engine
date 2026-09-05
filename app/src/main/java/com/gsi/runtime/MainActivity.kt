@@ -234,6 +234,13 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 }
                 logToConsole("Virtual Sensor Subsystem & Sensors HAL Bridge active (IIO sysfs online)")
             }
+
+            // Pilar 7: Initialize Virtual Camera HAL Bridge & V4L2 Nodes
+            val camOk = GsiEngine.nativeInitCamera(sandboxDirPath)
+            if (camOk) {
+                GsiEngine.nativeStartCameraStream(0, 1280, 720) // Start Back Camera 30 FPS test pattern
+                logToConsole("Virtual Camera HAL Bridge & V4L2 Nodes online (/dev/video0,1 active)")
+            }
         }
 
         // 4. Setup SurfaceView for ANativeWindow pipeline
@@ -501,6 +508,26 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         }
         binding.chipSensorStats.setOnClickListener {
             val stats = GsiEngine.nativeGetSensorStats()
+            appendTerminalOutput("\n$stats\n")
+        }
+        var activeCameraId = 0
+        binding.chipCamStart.setOnClickListener {
+            GsiEngine.nativeStartCameraStream(activeCameraId, if (activeCameraId == 0) 1280 else 640, if (activeCameraId == 0) 720 else 480)
+            appendTerminalOutput("\n[Camera HAL] Started 30 FPS test pattern stream on Camera $activeCameraId\n")
+        }
+        binding.chipCamStop.setOnClickListener {
+            GsiEngine.nativeStopCameraStream(activeCameraId)
+            appendTerminalOutput("\n[Camera HAL] Stopped stream on Camera $activeCameraId\n")
+        }
+        binding.chipCamSwitch.setOnClickListener {
+            activeCameraId = if (activeCameraId == 0) 1 else 0
+            val w = if (activeCameraId == 0) 1280 else 640
+            val h = if (activeCameraId == 0) 720 else 480
+            GsiEngine.nativeStartCameraStream(activeCameraId, w, h)
+            appendTerminalOutput("\n[Camera HAL] Switched to Camera $activeCameraId (${if (activeCameraId == 0) "Back HD 1280x720" else "Front VGA 640x480"})\n")
+        }
+        binding.chipCameraStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetCameraStats()
             appendTerminalOutput("\n$stats\n")
         }
         binding.chipTestBinder.setOnClickListener {
@@ -917,6 +944,8 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         GsiAudioPlayer.stop()
         GsiBatteryManager.stop(this)
         GsiSensorManager.stop(this)
+        GsiEngine.nativeStopCameraStream(0)
+        GsiEngine.nativeStopCameraStream(1)
         GsiEngine.nativeShutdownAudio()
         GsiEngine.nativeShutdownLogcatBroker()
         GsiEngine.nativeShutdownNetwork()

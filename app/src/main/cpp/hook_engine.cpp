@@ -167,6 +167,15 @@ std::string redirectSandboxPath(const char* path) {
     if (p.rfind("/sys/bus/iio/devices/", 0) == 0) {
         return sandbox + "/sys/bus/iio/devices/" + p.substr(21);
     }
+    if (p == "/dev/video0") {
+        return sandbox + "/tmp/v4l2_video0.raw";
+    }
+    if (p == "/dev/video1") {
+        return sandbox + "/tmp/v4l2_video1.raw";
+    }
+    if (p.rfind("/dev/video", 0) == 0) {
+        return sandbox + "/tmp/v4l2_video0.raw";
+    }
 
     return p;
 }
@@ -824,6 +833,18 @@ int hw_get_module(const char* id, const void** module) {
         {}
     };
 
+    static VirtualHwModule cameraModule = {
+        0x48574D54,
+        1,
+        0,
+        "camera",
+        "Virtual GSI Camera HAL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
     if (strcmp(id, "gralloc") == 0) {
         *module = &grallocModule;
         return 0;
@@ -838,6 +859,10 @@ int hw_get_module(const char* id, const void** module) {
     }
     if (strcmp(id, "sensors") == 0) {
         *module = &sensorsModule;
+        return 0;
+    }
+    if (strcmp(id, "camera") == 0) {
+        *module = &cameraModule;
         return 0;
     }
 

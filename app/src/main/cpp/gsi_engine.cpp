@@ -23,6 +23,7 @@
 #include "include/audio_bridge.h"
 #include "include/battery_bridge.h"
 #include "include/sensor_bridge.h"
+#include "include/camera_bridge.h"
 
 namespace {
     std::mutex gFsMutex;
@@ -877,7 +878,47 @@ Java_com_gsi_runtime_GsiEngine_nativeGetSensorStats(JNIEnv* env, jobject /* this
     return env->NewStringUTF(stats.c_str());
 }
 
+// -------------------------------------------------------------
+// Pilar 7: Virtual Camera & Media Codec Stub HAL APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInitCamera(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    return gsi::CameraBridge::getInstance().initialize(sDir) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeStartCameraStream(JNIEnv* /* env */, jobject /* this */,
+                                                      jint cameraId, jint width, jint height) {
+    return gsi::CameraBridge::getInstance().startStream(
+        cameraId,
+        static_cast<uint32_t>(width),
+        static_cast<uint32_t>(height)
+    ) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT void JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeStopCameraStream(JNIEnv* /* env */, jobject /* this */, jint cameraId) {
+    gsi::CameraBridge::getInstance().stopStream(cameraId);
+}
+
+JNIEXPORT jint JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetCameraFrameCount(JNIEnv* /* env */, jobject /* this */, jint cameraId) {
+    return static_cast<jint>(gsi::CameraBridge::getInstance().getFrameCount(cameraId));
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetCameraStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::CameraBridge::getInstance().getCameraStatsString();
+    return env->NewStringUTF(stats.c_str());
+}
+
 } // extern "C"
+
 
 
 

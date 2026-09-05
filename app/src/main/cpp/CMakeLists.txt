@@ -37,6 +37,7 @@ add_library(
     audio_bridge.cpp
     battery_bridge.cpp
     sensor_bridge.cpp
+    camera_bridge.cpp
 )
 
 target_link_libraries(
