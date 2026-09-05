@@ -256,6 +256,13 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 binding.tvTelephonyStatus.text = "Virtual Telephony & Wi-Fi: ONLINE (SIM: CyberGSI 5G [5 bars] | Wi-Fi: 866Mbps)"
                 logToConsole("Virtual Telephony & Wi-Fi Bridge online (/dev/socket/rild active)")
             }
+
+            // Pilar 10: Initialize Virtual Bluetooth HAL Subsystem
+            val btOk = GsiEngine.nativeInitBluetooth(sandboxDirPath)
+            if (btOk) {
+                binding.tvBluetoothStatus.text = "Virtual Bluetooth HAL: ONLINE (CyberGSI-BLE [00:1A:7D:DA:71:13] | BT 5.2)"
+                logToConsole("Virtual Bluetooth HAL Subsystem online (/dev/vhci active)")
+            }
         }
 
         // 4. Setup SurfaceView for ANativeWindow pipeline
@@ -575,6 +582,24 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         }
         binding.chipRilStats.setOnClickListener {
             val stats = GsiEngine.nativeGetTelephonyStats()
+            appendTerminalOutput("\n$stats\n")
+        }
+        var btEnabled = true
+        binding.chipBtToggle.setOnClickListener {
+            btEnabled = !btEnabled
+            GsiEngine.nativeToggleBluetooth(btEnabled)
+            binding.tvBluetoothStatus.text = if (btEnabled)
+                "Virtual Bluetooth HAL: ONLINE (CyberGSI-BLE [00:1A:7D:DA:71:13] | BT 5.2)"
+            else
+                "Virtual Bluetooth HAL: OFFLINE (Disabled / STATE_OFF)"
+            appendTerminalOutput("\n[Bluetooth HAL] Adapter toggled: ${if (btEnabled) "ENABLED (STATE_ON)" else "DISABLED (STATE_OFF)"}\n")
+        }
+        binding.chipBtScan.setOnClickListener {
+            val ok = GsiEngine.nativeStartBleScan()
+            appendTerminalOutput(if (ok) "\n[Bluetooth HAL] BLE Discovery completed. 4 nearby peripherals detected.\n" else "\n[Bluetooth HAL] BLE Scan failed (Bluetooth is off)\n")
+        }
+        binding.chipBtStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetBluetoothStats()
             appendTerminalOutput("\n$stats\n")
         }
         binding.chipTestBinder.setOnClickListener {

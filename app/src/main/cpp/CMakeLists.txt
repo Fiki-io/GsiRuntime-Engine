@@ -40,6 +40,7 @@ add_library(
     camera_bridge.cpp
     storage_bridge.cpp
     telephony_bridge.cpp
+    bluetooth_bridge.cpp
 )
 
 target_link_libraries(

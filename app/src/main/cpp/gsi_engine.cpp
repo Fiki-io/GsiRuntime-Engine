@@ -26,6 +26,7 @@
 #include "include/camera_bridge.h"
 #include "include/storage_bridge.h"
 #include "include/telephony_bridge.h"
+#include "include/bluetooth_bridge.h"
 
 namespace {
     std::mutex gFsMutex;
@@ -974,6 +975,35 @@ Java_com_gsi_runtime_GsiEngine_nativeToggleWifi(JNIEnv* /* env */, jobject /* th
 JNIEXPORT jstring JNICALL
 Java_com_gsi_runtime_GsiEngine_nativeGetTelephonyStats(JNIEnv* env, jobject /* this */) {
     std::string stats = gsi::TelephonyBridge::getInstance().getTelephonyStatsString();
+    return env->NewStringUTF(stats.c_str());
+}
+
+// -------------------------------------------------------------
+// Pilar 10: Virtual Bluetooth HAL Subsystem APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInitBluetooth(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    return gsi::BluetoothBridge::getInstance().initialize(sDir) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeToggleBluetooth(JNIEnv* /* env */, jobject /* this */, jboolean enabled) {
+    return gsi::BluetoothBridge::getInstance().toggleBluetooth(enabled == JNI_TRUE) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeStartBleScan(JNIEnv* /* env */, jobject /* this */) {
+    return gsi::BluetoothBridge::getInstance().startBleScan() ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetBluetoothStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::BluetoothBridge::getInstance().getBluetoothStatsString();
     return env->NewStringUTF(stats.c_str());
 }
 

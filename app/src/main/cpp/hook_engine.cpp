@@ -232,6 +232,12 @@ std::string redirectSandboxPath(const char* path) {
     if (p == "/dev/socket/wpa_wlan0") {
         return sandbox + "/dev/socket/wpa_wlan0";
     }
+    if (p == "/dev/vhci") {
+        return sandbox + "/tmp/dev_vhci.raw";
+    }
+    if (p == "/dev/rfkill") {
+        return sandbox + "/tmp/dev_rfkill.raw";
+    }
 
     return p;
 }
@@ -1013,6 +1019,18 @@ int hw_get_module(const char* id, const void** module) {
         {}
     };
 
+    static VirtualHwModule bluetoothModule = {
+        0x48574D54,
+        1,
+        0,
+        "bluetooth",
+        "Virtual GSI Bluetooth HAL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
     if (strcmp(id, "gralloc") == 0) {
         *module = &grallocModule;
         return 0;
@@ -1039,6 +1057,10 @@ int hw_get_module(const char* id, const void** module) {
     }
     if (strcmp(id, "wifi") == 0) {
         *module = &wifiModule;
+        return 0;
+    }
+    if (strcmp(id, "bluetooth") == 0) {
+        *module = &bluetoothModule;
         return 0;
     }
 

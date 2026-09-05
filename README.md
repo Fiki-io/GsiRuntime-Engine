@@ -118,6 +118,13 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Full Virtual 5G SIM telemetry (Carrier: "CyberGSI 5G", MCC/MNC: 310-260, Signal: 5/5 bars, IMEI: 860123456789012, Data: CONNECTED).
     - Virtual Wi-Fi networking state (SSID: "GSI-Virtual-WiFi", IP: 192.168.1.150, Speed: 866 Mbps 802.11ac, RSSI: -42 dBm).
     - Interactive hardware toggling chips (`[ril_stats]`, `[sim_toggle]`, `[wifi_toggle]`).
+18. **Virtual Bluetooth HAL Subsystem (Pilar 10)**:
+    - User-space Virtual Host Controller Interface (`/dev/vhci`) and `/dev/rfkill` emulation.
+    - Android Bluetooth HAL interception via `hw_get_module("bluetooth")` returning valid HAL descriptor `0x48574D54` to satisfy Fluoride / Floss stack and `BluetoothService`.
+    - Virtual Dual-Mode Bluetooth 5.2 controller (Device Name: "CyberGSI-Bluetooth", BD_ADDR: `00:1A:7D:DA:71:13`, Scan Mode: Connectable & Discoverable).
+    - Simulated BLE peripheral discovery engine ("CyberWatch Ultra", "CyberBuds Pro ANC", "GSI Beacon Hub", "CyberKey Fob").
+    - System property sync (`persist.sys.bluetooth.*`, `bluetooth.status`, A2DP / HFP profiles).
+    - Interactive hardware control chips (`[bt_stats]`, `[bt_toggle]`, `[bt_scan]`).
 
 ---
 

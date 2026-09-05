@@ -154,6 +154,12 @@ object GsiEngine {
     external fun nativeToggleWifi(connected: Boolean): Boolean
     external fun nativeGetTelephonyStats(): String
 
+    // Virtual Bluetooth HAL Subsystem (Pilar 10)
+    external fun nativeInitBluetooth(sandboxDir: String): Boolean
+    external fun nativeToggleBluetooth(enabled: Boolean): Boolean
+    external fun nativeStartBleScan(): Boolean
+    external fun nativeGetBluetoothStats(): String
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()
