@@ -47,7 +47,9 @@ add_library(
     keystore_bridge.cpp
     gpu_bridge.cpp
     usb_bridge.cpp
+    live_boot_runner.cpp
 )
+
 
 target_link_libraries(
     gsi_core

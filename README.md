@@ -164,6 +164,13 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Permissive debug authentication bypass (`ro.adb.secure = 0`, `ro.debuggable = 1`, `persist.sys.usb.config = adb`).
     - CNXN handshake protocol implementation and shell channel multiplexing.
     - Interactive hardware control chips: `[adb_stats]`, `[adb_toggle]`, `[adb_test_conn]`.
+24. **Direct Live Boot Runner for Real GSI (Option C)**:
+    - End-to-end automated live boot orchestrator (`LiveBootRunner`) that directly boots untouched real GSI images (`system-squeak-arm64-ab-vanilla.img` - 1.92 GB, Android 13 API 33).
+    - Direct path-based mounting (`nativeOpenFilesystemPath`, `nativeDirectLiveBoot`) with automatic storage discovery (`filesDir`, `cacheDir`, `/sdcard/Download/`).
+    - Full synchronization across all 14 Virtual HAL subsystems (GPU EGL 3.2, Audio 48kHz PCM, Input, Battery, Sensors, Camera, Storage 64GB, 5G RIL, BT 5.2, ClearKey/Widevine L3 DRM, KeyMint v3, USB ADB).
+    - 4-phase Android init sequence execution (`early-init` -> `init` -> `early-boot` -> `boot` -> `sys.boot_completed=1`).
+    - Dedicated glowing UI trigger: `[⚡ DIRECT LIVE BOOT GSI (AUTO-DETECT)]` and terminal quick chip `[live_boot]`.
+
 
 
 ---

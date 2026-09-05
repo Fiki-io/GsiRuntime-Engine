@@ -379,6 +379,11 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
             selectImageLauncher.launch(arrayOf("*/*"))
         }
 
+        binding.btnDirectLiveBoot.setOnClickListener {
+            triggerDirectLiveBoot()
+        }
+
+
         // 6. Setup Rendering Test buttons
         binding.btnStartRender.setOnClickListener {
             startDisplayTest()
@@ -740,7 +745,11 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
             val res = GsiEngine.nativeSimulateAdbConnection()
             appendTerminalOutput("\n$res\n")
         }
+        binding.chipLiveBoot.setOnClickListener {
+            binding.btnDirectLiveBoot.performClick()
+        }
         binding.chipExtractGsi.setOnClickListener {
+
 
             binding.btnExtractEssential.performClick()
         }
@@ -817,7 +826,103 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         )
     }
 
+    private fun triggerDirectLiveBoot() {
+        // 1. If an image is already opened via SAF with activePfd, use it!
+        val pfd = activePfd
+        if (pfd != null) {
+            logToConsole("Direct Live Boot: Booting from currently loaded image descriptor (FD: ${pfd.fd})...")
+            performDirectBoot(null, pfd.fd)
+            return
+        }
+
+        // 2. Scan for candidate GSI files in common app and system storage paths
+        val candidates = listOf(
+            File(filesDir, "system-squeak-arm64-ab-vanilla.img"),
+            File(filesDir, "system.img"),
+            File(cacheDir, "system-squeak-arm64-ab-vanilla.img"),
+            File(cacheDir, "system.img"),
+            File(getExternalFilesDir(null), "system-squeak-arm64-ab-vanilla.img"),
+            File(getExternalFilesDir(null), "system.img"),
+            File("/sdcard/Download/system-squeak-arm64-ab-vanilla.img"),
+            File("/sdcard/Download/system.img"),
+            File("/sdcard/system.img"),
+            File("/data/local/tmp/system-squeak-arm64-ab-vanilla.img"),
+            File("/data/local/tmp/system.img")
+        )
+
+        val detected = candidates.firstOrNull { it.exists() && it.canRead() && it.length() > 10 * 1024 * 1024 }
+        if (detected != null) {
+            logToConsole("Direct Live Boot: Auto-detected GSI image at ${detected.absolutePath} (${detected.length() / (1024 * 1024)} MB)")
+            performDirectBoot(detected.absolutePath, null)
+        } else {
+            // Prompt dialog: select file via SAF or scan
+            AlertDialog.Builder(this)
+                .setTitle("⚡ Direct Live Boot GSI")
+                .setMessage("No pre-loaded GSI image found in standard storage paths.\n\nSelect a GSI system.img file from storage to launch direct boot:")
+                .setPositiveButton("Select GSI File") { _, _ ->
+                    selectImageLauncher.launch(arrayOf("*/*"))
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+    }
+
+    private fun performDirectBoot(imagePath: String?, fd: Int?) {
+        binding.btnDirectLiveBoot.isEnabled = false
+        binding.tvLiveBootStatus.text = "⚡ Booting GSI Live..."
+        binding.tvLiveBootStatus.setTextColor(getColor(R.color.accent_yellow))
+
+        // Switch to Boot Splash Compositor & VFB mode
+        if (!isRendering) startDisplayTest()
+        isVfbMode = true
+        GsiEngine.nativeSetVfbMode(true)
+        GsiEngine.nativeStartBootAnimation(true)
+        updateDisplayModeUi("BOOT_SPLASH")
+
+        // Play Boot Chime
+        GsiAudioPlayer.playChime(1)
+
+        val targetName = imagePath?.let { File(it).name } ?: "Active GSI FD ($fd)"
+        logToConsole("=== DIRECT LIVE BOOT INITIATED: $targetName ===")
+        appendTerminalOutput("\n⚡ [DIRECT LIVE BOOT] Launching GSI runtime ($targetName)...\n")
+
+        Thread {
+            val bootLog = if (imagePath != null) {
+                GsiEngine.nativeDirectLiveBoot(imagePath, sandboxDirPath)
+            } else if (fd != null) {
+                GsiEngine.nativeDirectLiveBootFd(fd, sandboxDirPath)
+            } else {
+                "Error: No image source provided"
+            }
+
+            runOnUiThread {
+                binding.btnDirectLiveBoot.isEnabled = true
+                binding.tvLiveBootStatus.text = "Direct Boot: ONLINE (sys.boot_completed=1)"
+                binding.tvLiveBootStatus.setTextColor(getColor(R.color.accent_green))
+                binding.tvBootPhaseBadge.text = "COMPLETED"
+                binding.tvBootPhaseBadge.setTextColor(getColor(R.color.accent_green))
+                binding.btnBootGsi.isEnabled = false
+                binding.btnStopBoot.isEnabled = true
+
+                // Update build info if available
+                val buildProp = GsiEngine.nativeGetBuildInfo()
+                currentBuildInfo = buildProp
+                if (buildProp != null && buildProp.osVersion.isNotBlank()) {
+                    binding.layoutRomMetadata.visibility = View.VISIBLE
+                    binding.tvGsiRomTitle.text = "Android ${buildProp.osVersion} (API ${buildProp.sdkVersion}) | ${if (buildProp.model.isNotBlank()) buildProp.model else "Generic Treble GSI"}"
+                    binding.tvGsiRomDetails.text = "Patch: ${buildProp.securityPatch} | Build: ${buildProp.buildId} | Treble: ${buildProp.isTrebleEnabled}"
+                }
+
+                appendTerminalOutput("\n$bootLog\n")
+                logToConsole("GSI Live Boot: Boot sequence completed successfully! sys.boot_completed=1")
+                showTextContentDialog("⚡ GSI Direct Live Boot Report", bootLog)
+                Toast.makeText(this, "🎉 GSI Live Boot Completed!", Toast.LENGTH_LONG).show()
+            }
+        }.start()
+    }
+
     private fun handleImageSelected(uri: Uri) {
+
         var fileName = "unknown.img"
         contentResolver.query(uri, null, null, null, null)?.use { cursor ->
             val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)

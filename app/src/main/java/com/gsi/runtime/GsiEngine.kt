@@ -24,7 +24,9 @@ object GsiEngine {
 
     // User-Space Filesystem & EXT4
     external fun nativeOpenFilesystem(fd: Int): Boolean
+    external fun nativeOpenFilesystemPath(path: String): Boolean
     external fun nativeCloseFilesystem()
+
     external fun nativeGetBuildInfo(): GsiBuildInfo?
     external fun nativeListDirectory(path: String): Array<GsiFileEntry>?
     external fun nativeReadFileText(path: String): String?
@@ -188,6 +190,13 @@ object GsiEngine {
     external fun nativeToggleAdbServer(start: Boolean): Boolean
     external fun nativeSimulateAdbConnection(): String
     external fun nativeGetUsbStats(): String
+
+    // Option C: Direct Live Boot Runner for Real GSI
+    external fun nativeDirectLiveBoot(imagePath: String, sandboxDir: String): String
+    external fun nativeDirectLiveBootFd(fd: Int, sandboxDir: String): String
+    external fun nativeGetLiveBootLog(): String
+
+
 
 
     // Display & Surface Pipeline

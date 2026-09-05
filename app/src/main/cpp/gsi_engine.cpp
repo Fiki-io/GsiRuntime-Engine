@@ -33,6 +33,8 @@
 #include "include/keystore_bridge.h"
 #include "include/gpu_bridge.h"
 #include "include/usb_bridge.h"
+#include "include/live_boot_runner.h"
+
 
 
 namespace {
@@ -159,6 +161,54 @@ Java_com_gsi_runtime_GsiEngine_nativeOpenFilesystem(JNIEnv* /* env */, jobject /
          gExt4Reader->getVolumeName().c_str());
     return JNI_TRUE;
 }
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeOpenFilesystemPath(JNIEnv* env, jobject /* this */, jstring jPath) {
+    const char* pChars = env->GetStringUTFChars(jPath, nullptr);
+    std::string path = pChars ? pChars : "";
+    if (pChars) env->ReleaseStringUTFChars(jPath, pChars);
+
+    if (path.empty()) return JNI_FALSE;
+
+    int fd = open(path.c_str(), O_RDONLY);
+    if (fd < 0) {
+        LOGE("Failed to open image file at path %s (errno: %d)", path.c_str(), errno);
+        return JNI_FALSE;
+    }
+
+    std::lock_guard<std::mutex> lock(gFsMutex);
+    gExt4Reader.reset();
+    gBlockDev.reset();
+
+    auto sparseDev = gsi::SparseBlockDevice::create(fd);
+    if (sparseDev) {
+        LOGI("Opened SparseBlockDevice successfully from path %s", path.c_str());
+        gBlockDev = std::move(sparseDev);
+    } else {
+        auto ver = gsi::ImageVerifier::verifyFileDescriptor(fd);
+        if (ver.isValid && ver.format == gsi::ImageFormat::RAW_EXT4) {
+            LOGI("Opened RawBlockDevice successfully from path %s", path.c_str());
+            gBlockDev = std::make_shared<gsi::RawBlockDevice>(fd, ver.blockSize, ver.totalBlocks);
+        } else {
+            LOGE("Failed to open block device from path: Neither sparse nor raw EXT4");
+            close(fd);
+            return JNI_FALSE;
+        }
+    }
+
+    gExt4Reader = gsi::Ext4Reader::open(gBlockDev);
+    if (!gExt4Reader) {
+        LOGE("Failed to initialize user-space EXT4 reader from path %s", path.c_str());
+        gBlockDev.reset();
+        close(fd);
+        return JNI_FALSE;
+    }
+
+    LOGI("User-Space EXT4 filesystem mounted successfully from %s (Volume: \"%s\")",
+         path.c_str(), gExt4Reader->getVolumeName().c_str());
+    return JNI_TRUE;
+}
+
 
 JNIEXPORT void JNICALL
 Java_com_gsi_runtime_GsiEngine_nativeCloseFilesystem(JNIEnv* /* env */, jobject /* this */) {
@@ -1183,7 +1233,42 @@ Java_com_gsi_runtime_GsiEngine_nativeGetUsbStats(JNIEnv* env, jobject /* this */
     return env->NewStringUTF(stats.c_str());
 }
 
+// -------------------------------------------------------------
+// Option C: Direct Live Boot Runner for Real GSI APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeDirectLiveBoot(JNIEnv* env, jobject /* this */, jstring jImagePath, jstring jSandboxDir) {
+    const char* imgChars = env->GetStringUTFChars(jImagePath, nullptr);
+    const char* sboxChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string imgPath = imgChars ? imgChars : "";
+    std::string sboxDir = sboxChars ? sboxChars : "";
+    if (imgChars) env->ReleaseStringUTFChars(jImagePath, imgChars);
+    if (sboxChars) env->ReleaseStringUTFChars(jSandboxDir, sboxChars);
+
+    gsi::LiveBootResult res = gsi::LiveBootRunner::getInstance().bootFromPath(imgPath, sboxDir);
+    return env->NewStringUTF(res.bootLog.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeDirectLiveBootFd(JNIEnv* env, jobject /* this */, jint fd, jstring jSandboxDir) {
+    const char* sboxChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sboxDir = sboxChars ? sboxChars : "";
+    if (sboxChars) env->ReleaseStringUTFChars(jSandboxDir, sboxChars);
+
+    gsi::LiveBootResult res = gsi::LiveBootRunner::getInstance().bootFromFd(fd, sboxDir);
+    return env->NewStringUTF(res.bootLog.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetLiveBootLog(JNIEnv* env, jobject /* this */) {
+    std::string log = gsi::LiveBootRunner::getInstance().getLastBootLog();
+    return env->NewStringUTF(log.c_str());
+}
+
+
 } // extern "C"
+
 
 
 
