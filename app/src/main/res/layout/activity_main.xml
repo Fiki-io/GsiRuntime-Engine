@@ -119,6 +119,16 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/tvAudioStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="2dp"
+                    android:text="Virtual Audio HAL: ONLINE (48kHz Stereo 16-bit | AudioTrack Bridge)"
+                    android:textColor="@color/primary_cyan"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
                     android:id="@+id/tvHostRam"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -704,6 +714,31 @@
                             android:backgroundTint="@color/surface_border"
                             android:text="test_crash"
                             android:textColor="@color/accent_red"
+                            android:textSize="11sp"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipPlayChime"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/accent_green"
+                            android:text="play_chime"
+                            android:textColor="@color/bg_dark"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipAudioStats"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/surface_border"
+                            android:text="audio_stats"
+                            android:textColor="@color/primary_cyan"
                             android:textSize="11sp"
                             app:cornerRadius="18dp" />
 

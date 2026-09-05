@@ -185,6 +185,13 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
             if (logcatOk) {
                 logToConsole("Real-Time Logcat Broker & Tombstone Subsystem active (logdw/logdr online)")
             }
+
+            // Pilar 3: Initialize Virtual Audio HAL & AudioTrack Bridge
+            val audioOk = GsiEngine.nativeInitAudio(sandboxDirPath)
+            if (audioOk) {
+                GsiAudioPlayer.start()
+                logToConsole("Virtual Audio HAL (48kHz Stereo 16-bit) & AudioTrack Bridge online")
+            }
         }
 
         // 4. Setup SurfaceView for ANativeWindow pipeline
@@ -357,6 +364,18 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         binding.chipSimulateCrash.setOnClickListener {
             val report = GsiEngine.nativeInjectTestCrash("Diagnostic simulation: SIGSEGV SEGV_MAPERR (libsurfaceflinger.so)")
             appendTerminalOutput("\n[CRASH INTERCEPTED & TOMBSTONE GENERATED]\n$report\n")
+        }
+        binding.chipPlayChime.setOnClickListener {
+            val chimeOk = GsiAudioPlayer.playChime(1)
+            if (chimeOk) {
+                appendTerminalOutput("\n[AUDIO HAL] Synthesizing & playing Android Boot Chime (C-Maj-7th)...\n")
+            } else {
+                appendTerminalOutput("\n[AUDIO HAL] Audio pipeline error\n")
+            }
+        }
+        binding.chipAudioStats.setOnClickListener {
+            val stats = GsiEngine.nativeGetAudioStats()
+            appendTerminalOutput("\n[Audio Stats] $stats\n")
         }
         binding.chipTestBinder.setOnClickListener {
             val report = GsiEngine.nativeRunBinderDiagnostic()
@@ -762,6 +781,8 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         GsiEngine.nativeStartBootAnimation(false)
         handler.removeCallbacks(bootPhaseRunnable)
         GsiEngine.nativeStopBootSequence()
+        GsiAudioPlayer.stop()
+        GsiEngine.nativeShutdownAudio()
         GsiEngine.nativeShutdownLogcatBroker()
         GsiEngine.nativeShutdownNetwork()
         GsiEngine.nativeStopPropertyService()

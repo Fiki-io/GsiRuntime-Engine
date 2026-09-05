@@ -20,6 +20,7 @@
 #include "include/gralloc_bridge.h"
 #include "include/network_bridge.h"
 #include "include/logcat_broker.h"
+#include "include/audio_bridge.h"
 
 namespace {
     std::mutex gFsMutex;
@@ -722,6 +723,61 @@ Java_com_gsi_runtime_GsiEngine_nativeInjectTestCrash(JNIEnv* env, jobject /* thi
     );
 
     return env->NewStringUTF(tombstone.c_str());
+}
+
+// -------------------------------------------------------------
+// Pilar 3: Virtual Audio HAL & PCM AudioTrack APIs
+// -------------------------------------------------------------
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeInitAudio(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    return gsi::AudioBridge::getInstance().initialize(sDir) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT void JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeShutdownAudio(JNIEnv* /* env */, jobject /* this */) {
+    gsi::AudioBridge::getInstance().shutdown();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeReadAudioPcm(JNIEnv* env, jobject /* this */, jshortArray jBuffer) {
+    if (!jBuffer) return 0;
+    jsize len = env->GetArrayLength(jBuffer);
+    if (len <= 0) return 0;
+
+    jshort* elements = env->GetShortArrayElements(jBuffer, nullptr);
+    size_t read = gsi::AudioBridge::getInstance().readSamples(reinterpret_cast<int16_t*>(elements), static_cast<size_t>(len));
+    env->ReleaseShortArrayElements(jBuffer, elements, 0);
+
+    return static_cast<jint>(read);
+}
+
+JNIEXPORT jint JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeWriteAudioPcm(JNIEnv* env, jobject /* this */, jshortArray jBuffer) {
+    if (!jBuffer) return 0;
+    jsize len = env->GetArrayLength(jBuffer);
+    if (len <= 0) return 0;
+
+    jshort* elements = env->GetShortArrayElements(jBuffer, nullptr);
+    size_t written = gsi::AudioBridge::getInstance().writeSamples(reinterpret_cast<const int16_t*>(elements), static_cast<size_t>(len));
+    env->ReleaseShortArrayElements(jBuffer, elements, JNI_ABORT);
+
+    return static_cast<jint>(written);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_gsi_runtime_GsiEngine_nativePlayChime(JNIEnv* /* env */, jobject /* this */, jint type) {
+    return gsi::AudioBridge::getInstance().synthesizeChime(type) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeGetAudioStats(JNIEnv* env, jobject /* this */) {
+    std::string stats = gsi::AudioBridge::getInstance().getStatsString();
+    return env->NewStringUTF(stats.c_str());
 }
 
 } // extern "C"

@@ -34,6 +34,7 @@ add_library(
     gralloc_bridge.cpp
     network_bridge.cpp
     logcat_broker.cpp
+    audio_bridge.cpp
 )
 
 target_link_libraries(

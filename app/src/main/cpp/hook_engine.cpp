@@ -152,6 +152,9 @@ std::string redirectSandboxPath(const char* path) {
     if (p.rfind("/dev/__properties__", 0) == 0) {
         return sandbox + "/dev/__properties_text__";
     }
+    if (p.rfind("/dev/snd/", 0) == 0) {
+        return sandbox + "/tmp/audio_pcm.raw";
+    }
 
     return p;
 }
@@ -785,12 +788,28 @@ int hw_get_module(const char* id, const void** module) {
         {}
     };
 
+    static VirtualHwModule audioModule = {
+        0x48574D54,
+        1,
+        0,
+        "audio",
+        "Virtual GSI Audio HAL Module",
+        "Google DeepMind GSI Engine",
+        nullptr,
+        nullptr,
+        {}
+    };
+
     if (strcmp(id, "gralloc") == 0) {
         *module = &grallocModule;
         return 0;
     }
     if (strcmp(id, "hwcomposer") == 0) {
         *module = &hwcModule;
+        return 0;
+    }
+    if (strcmp(id, "audio") == 0) {
+        *module = &audioModule;
         return 0;
     }
 

@@ -88,6 +88,14 @@ object GsiEngine {
     external fun nativeGetLogStats(): String
     external fun nativeInjectTestCrash(reason: String = "Diagnostic simulation"): String
 
+    // Virtual Audio HAL & PCM AudioTrack (Pilar 3)
+    external fun nativeInitAudio(sandboxDir: String): Boolean
+    external fun nativeShutdownAudio()
+    external fun nativeReadAudioPcm(buffer: ShortArray): Int
+    external fun nativeWriteAudioPcm(buffer: ShortArray): Int
+    external fun nativePlayChime(type: Int = 1): Boolean
+    external fun nativeGetAudioStats(): String
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()
