@@ -41,6 +41,8 @@ add_library(
     storage_bridge.cpp
     telephony_bridge.cpp
     bluetooth_bridge.cpp
+    gsi_extractor.cpp
+    init_runner.cpp
 )
 
 target_link_libraries(

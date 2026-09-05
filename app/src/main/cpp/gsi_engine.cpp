@@ -27,6 +27,8 @@
 #include "include/storage_bridge.h"
 #include "include/telephony_bridge.h"
 #include "include/bluetooth_bridge.h"
+#include "include/gsi_extractor.h"
+#include "include/init_runner.h"
 
 namespace {
     std::mutex gFsMutex;
@@ -1005,6 +1007,41 @@ JNIEXPORT jstring JNICALL
 Java_com_gsi_runtime_GsiEngine_nativeGetBluetoothStats(JNIEnv* env, jobject /* this */) {
     std::string stats = gsi::BluetoothBridge::getInstance().getBluetoothStatsString();
     return env->NewStringUTF(stats.c_str());
+}
+
+// -------------------------------------------------------------
+// Real GSI Live Extraction & Init Execution Test Runner (Option B)
+// -------------------------------------------------------------
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeExtractEssentialSystem(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    std::lock_guard<std::mutex> lock(gFsMutex);
+    if (!gExt4Reader) {
+        return env->NewStringUTF("Error: No GSI image loaded in memory. Open an image first.");
+    }
+
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    auto res = gsi::GsiExtractor::getInstance().extractEssentialSystem(*gExt4Reader, sDir);
+    return env->NewStringUTF(res.summary.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_gsi_runtime_GsiEngine_nativeRunGsiTestSuite(JNIEnv* env, jobject /* this */, jstring jSandboxDir) {
+    const char* dirChars = env->GetStringUTFChars(jSandboxDir, nullptr);
+    std::string sDir = dirChars ? dirChars : "";
+    if (dirChars) env->ReleaseStringUTFChars(jSandboxDir, dirChars);
+
+    bool hasVfs = false;
+    {
+        std::lock_guard<std::mutex> lock(gFsMutex);
+        hasVfs = (gExt4Reader != nullptr);
+    }
+
+    auto report = gsi::InitRunner::getInstance().runGsiTestSuite(sDir, hasVfs);
+    return env->NewStringUTF(report.formattedSummary.c_str());
 }
 
 } // extern "C"

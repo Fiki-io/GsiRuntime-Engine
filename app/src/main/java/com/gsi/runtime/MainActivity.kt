@@ -368,6 +368,29 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
             currentBuildInfo?.let { showBuildPropDialog(it) }
         }
 
+        binding.btnExtractEssential.setOnClickListener {
+            binding.btnExtractEssential.isEnabled = false
+            binding.tvExtractStatus.text = "Extracting essential system files to sandbox..."
+            logToConsole("GSI Extractor: Unpacking /system/bin, /system/etc, /system/lib64 to sandbox...")
+            Thread {
+                val summary = GsiEngine.nativeExtractEssentialSystem(sandboxDirPath)
+                runOnUiThread {
+                    binding.btnExtractEssential.isEnabled = true
+                    binding.tvExtractStatus.text = summary
+                    logToConsole("GSI Extractor: $summary")
+                    appendTerminalOutput("\n[Extractor] $summary\n")
+                    Toast.makeText(this, "Essential System Extracted!", Toast.LENGTH_SHORT).show()
+                }
+            }.start()
+        }
+
+        binding.btnRunGsiTests.setOnClickListener {
+            logToConsole("Executing Real GSI Live Execution Test Suite...")
+            val report = GsiEngine.nativeRunGsiTestSuite(sandboxDirPath)
+            appendTerminalOutput("\n$report\n")
+            showTextContentDialog("GSI Execution Test Suite Report", report)
+        }
+
         // 8. Tahap 7 / Option B: Init Boot Sequence & Services Controls
         binding.btnBootGsi.setOnClickListener {
             logToConsole("Starting Android GSI Boot Sequence...")
@@ -601,6 +624,15 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         binding.chipBtStats.setOnClickListener {
             val stats = GsiEngine.nativeGetBluetoothStats()
             appendTerminalOutput("\n$stats\n")
+        }
+        binding.chipExtractGsi.setOnClickListener {
+            binding.btnExtractEssential.performClick()
+        }
+        binding.chipRunGsiTests.setOnClickListener {
+            binding.btnRunGsiTests.performClick()
+        }
+        binding.chipSpawnGsiSh.setOnClickListener {
+            executeSandboxCommand("sh")
         }
         binding.chipTestBinder.setOnClickListener {
             val report = GsiEngine.nativeRunBinderDiagnostic()

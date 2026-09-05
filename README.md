@@ -125,6 +125,17 @@ Built with **Kotlin + Modern C++20 NDK**, direct `ANativeWindow` hardware render
     - Simulated BLE peripheral discovery engine ("CyberWatch Ultra", "CyberBuds Pro ANC", "GSI Beacon Hub", "CyberKey Fob").
     - System property sync (`persist.sys.bluetooth.*`, `bluetooth.status`, A2DP / HFP profiles).
     - Interactive hardware control chips (`[bt_stats]`, `[bt_toggle]`, `[bt_scan]`).
+19. **Real GSI Live Extraction & Execution Test Runner Engine**:
+    - Recursive system unpacker (`GsiExtractor`) extracting essential directories from raw untouched GSI `system.img` (`/system/bin/`, `/system/etc/init/`, `/system/lib64/`, `/system/build.prop`, `/init.rc`) directly into the sandbox with proper POSIX permissions (`0755` for executables).
+    - Automated GSI Execution Test Suite (`InitRunner`) providing 7-point runtime health check:
+      1. Sandbox Filesystem Isolation (`system`, `data`, `proc`, `sys`, `dev`, `tmp`).
+      2. LD_PRELOAD Syscall Hook Engine deployment (`libgsi_hook.so`).
+      3. Guest Executable Binaries validation (`toybox`, `sh`, `toolbox`).
+      4. Android Property Service Daemon IPC & socket verification.
+      5. User-Space EXT4 / Sparse VFS superblock & inode integrity.
+      6. Process Spawner & Root/SELinux privilege spoofing execution.
+      7. Android Init Supervisor & registered service states.
+    - One-click interactive execution buttons & quick chips: `[extract_gsi]`, `[run_gsi_tests]`, `[spawn_sh]`.
 
 ---
 

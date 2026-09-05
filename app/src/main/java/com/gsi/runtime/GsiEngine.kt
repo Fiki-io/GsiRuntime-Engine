@@ -160,6 +160,10 @@ object GsiEngine {
     external fun nativeStartBleScan(): Boolean
     external fun nativeGetBluetoothStats(): String
 
+    // Real GSI Live Extraction & Init Execution Test Runner (Option B)
+    external fun nativeExtractEssentialSystem(sandboxDir: String): String
+    external fun nativeRunGsiTestSuite(sandboxDir: String): String
+
     // Display & Surface Pipeline
     external fun nativeSetSurface(surface: Surface)
     external fun nativeClearSurface()

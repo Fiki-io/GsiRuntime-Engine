@@ -316,6 +316,48 @@
                             android:textSize="12sp"
                             app:cornerRadius="6dp" />
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="6dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnExtractEssential"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="4dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="@color/accent_green"
+                            android:text="Extract GSI System"
+                            android:textColor="@color/bg_dark"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="6dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnRunGsiTests"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="@color/primary_cyan"
+                            android:text="Run GSI Tests"
+                            android:textColor="@color/bg_dark"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="6dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvExtractStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="4dp"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"
+                        tools:text="Extraction ready: /system/bin, /system/etc, /system/lib64" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -1314,6 +1356,44 @@
                             android:layout_marginEnd="6dp"
                             android:backgroundTint="@color/surface_border"
                             android:text="bt_scan"
+                            android:textColor="@color/primary_cyan"
+                            android:textSize="11sp"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipExtractGsi"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/accent_green"
+                            android:text="extract_gsi"
+                            android:textColor="@color/bg_dark"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipRunGsiTests"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/primary_cyan_dark"
+                            android:text="run_gsi_tests"
+                            android:textColor="@color/bg_dark"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipSpawnGsiSh"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="6dp"
+                            android:backgroundTint="@color/surface_border"
+                            android:text="spawn_sh"
                             android:textColor="@color/primary_cyan"
                             android:textSize="11sp"
                             app:cornerRadius="18dp" />
