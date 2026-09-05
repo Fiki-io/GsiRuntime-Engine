@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GSI Runtime</string>
+    <string name="engine_title">GSI RUNTIME ENGINE</string>
+    <string name="engine_subtitle">User-Space Rootless Container &amp; Direct ANativeWindow</string>
+    <string name="system_info_title">HOST &amp; ENGINE SPECS</string>
+    <string name="select_image">Load GSI Image (system.img)</string>
+    <string name="start_render_test">Start Native Display Test</string>
+    <string name="stop_render_test">Stop Display</string>
+    <string name="status_idle">Engine Idle</string>
+    <string name="status_ready">Engine Initialized</string>
+    <string name="status_rendering">Rendering Native Framebuffer (60 FPS)</string>
+    <string name="no_image_selected">No GSI image loaded</string>
+</resources>
